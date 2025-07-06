@@ -141,6 +141,7 @@ jobs:
           apt-get install -y \
             libdb-dev \
             libdb5.3-dev:armhf || echo "libdb5.3-dev:armhf not found, skipping"
+            
       - name: Remove gtest build directory if exists
         run: |
           if [ -d ./apt/test/libapt/gtest/src/gtest-build ]; then
@@ -150,10 +151,9 @@ jobs:
           fi
 
       - name: Cross-compile googletest for armhf
-        working-directory: ./apt/test/libapt/gtest/src
+        working-directory: ./googletest-1.12.1
         run: |
-          mkdir gtest-build
-          cd gtest-build
+          mkdir build && cd build
 
           cmake .. \
             -DCMAKE_SYSTEM_NAME=Linux \
