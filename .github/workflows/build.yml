@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: { arch: [armhf, amd64] }
-    container: debian:bookworm
+    container: debian:sid
     env:
       DEBIAN_FRONTEND: noninteractive
     steps:
@@ -31,7 +31,7 @@ jobs:
           build-essential devscripts fakeroot qemu-user-static curl jq \
           curl wget libzstd-dev \
           cmake docbook-xml docbook-xsl googletest libbz2-dev libdb-dev libssl-dev \
-          liblz4-dev liblzma-dev libseccomp-dev libsystemd-dev libudev-dev libxxhash-dev \
+          liblz4-dev liblzma-dev  liblzma-dev libseccomp-dev libsystemd-dev libudev-dev libxxhash-dev \
           ninja-build pkg-config po4a triehash xsltproc zlib1g-dev doxygen graphviz w3m
 
       - name: Add sid repo and install latest dpkg-dev
