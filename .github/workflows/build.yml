@@ -111,6 +111,9 @@ jobs:
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -G Ninja
           ninja
+          ninja install # 추가: Gtest를 지정된 설치 경로에 설치
+          file /usr/arm-linux-gnueabihf/lib/libgtest.a # 설치 후 다시 확인
+          file /usr/arm-linux-gnueabihf/lib/libgtest_main.a
 
       - name: Install build dependencies
         run: |
