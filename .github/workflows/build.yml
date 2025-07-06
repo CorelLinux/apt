@@ -23,10 +23,10 @@ jobs:
       - name: Get latest apt version
         id: get_version
         run: |
-          apt-get update && apt-get install -y jq
-          curl -s https://api.github.com/repos/Debian/apt/releases/latest | jq -r .tag_name | sed 's/^v//' > latest_version.txt
-          echo "APT_VERSION=$(cat latest_version.txt)" >> $GITHUB_ENV
-
+          apt-get update -qq
+          apt_version=$(apt-cache policy apt | awk '/Candidate:/ { print $2 }')
+          echo "APT_VERSION=$apt_version" >> $GITHUB_ENV
+ 
       - name: Install required base tools
         run: |
           apt-get update
