@@ -179,9 +179,9 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Patch debian/rules with external override
+      - name: Patch debian/rules with safe override
         run: |
-          echo -e 'override_dh_auto_configure-arch:\n\t@if [ "$(DEB_HOST_ARCH)" = "armhf" ]; then dh_auto_configure -- -DCMAKE_SYSTEM_PROCESSOR=arm; elif [ "$(DEB_HOST_ARCH)" = "arm64" ]; then dh_auto_configure -- -DCMAKE_SYSTEM_PROCESSOR=aarch64; else dh_auto_configure; fi' > ./apt/debian/override.mk
+          echo -e 'override_dh_auto_configure-arch:\n\t@echo "Host: \$(DEB_HOST_ARCH)"\n\t@if [ "\$(DEB_HOST_ARCH)" = "armhf" ]; then \\\n\t\tdh_auto_configure; \\\n\telif [ "\$(DEB_HOST_ARCH)" = "arm64" ]; then \\\n\t\tdh_auto_configure; \\\n\telse \\\n\t\tdh_auto_configure; \\\n\tfi' > ./apt/debian/override.mk
           grep -q '^include debian/override.mk' ./apt/debian/rules || echo 'include debian/override.mk' >> ./apt/debian/rules
         
       - name: Build package
