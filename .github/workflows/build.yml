@@ -179,21 +179,15 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Patch debian/rules for CMake cross build
+      - name: Patch debian/rules to fix CMake source dir
         run: |
           FILE=debian/rules
-
-          # override_dh_auto_configure-arch: 블록이 이미 있는지 확인 후 수정 또는 추가
-          if grep -q '^override_dh_auto_configure-arch:' "$FILE"; then
-            sed -i '/^override_dh_auto_configure-arch:/,/^$/c\
-              \t\t\toverride_dh_auto_configure-arch:\n\
-              \t\t\t\tmkdir -p build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake' "$FILE"
-          else
-            printf '\n\t\t\toverride_dh_auto_configure-arch:\n\t\t\t\tmkdir -p build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake\n' >> "$FILE"
-          fi
-
-          echo "===== [ debian/rules 전체 출력 ] ====="
-          cat "$FILE"
+          sed -i '/^override_dh_auto_configure-arch:/,/^$/c\
+            \t\t\toverride_dh_auto_configure-arch:\n\
+            \t\t\t\tcd obj-$(DEB_HOST_GNU_TYPE) && cmake $(CURDIR) -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/toolchain.cmake' "$FILE"
+    
+    echo "===== [ Patched debian/rules ] ====="
+    cat "$FILE"
           
       - name: Build package
         run: |
