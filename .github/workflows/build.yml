@@ -43,6 +43,20 @@ jobs:
 
       - run: apt-get update && apt-get source apt=${{ env.APT_VERSION }}
 
+      - name: Rename source directory
+        run: |
+          mv apt-* apt-${{ env.APT_VERSION }}
+
+      - name: Install dependencies for mk-build-deps
+        run: |
+          apt-get update
+          apt-get install -y equivs devscripts
+
+      - name: Use mk-build-deps to install all apt dependencies
+        run: |
+          cd apt-${{ env.APT_VERSION }}
+          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
+
       - run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
