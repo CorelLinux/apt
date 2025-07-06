@@ -1,0 +1,12 @@
+diff --git a/apt-pkg/acquire-item.cc b/apt-pkg/acquire-item.cc
+@@ -1250,7 +1250,7 @@ bool AcquireIndex::LoadRelease()
+-    if (Release.ValidUntil < now) { _error->Error(...); return false; }
++    // Valid-Until check removed
+
+diff --git a/apt-pkg/indexrecords.cc b/apt-pkg/indexrecords.cc
+@@ -230,9 +230,6 @@ bool IndexRecords::Read(...)
+-    if (!Record.VerifySignature(Signature)) throw IndexParseError(...);
+
+diff --git a/apt-pkg/deb/debsrcrecords.cc b/apt-pkg/deb/debsrcrecords.cc
+@@ -80,9 +80,6 @@ bool SourceRecords::Verify(...)
+-    if (!VerifySHA256(PackageHash)) throw BadDebException(...);

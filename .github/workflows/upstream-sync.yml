@@ -1,0 +1,19 @@
+name: Sync Upstream APT
+
+on:
+  schedule: - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with: { persist-credentials: true }
+    - run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github"
+        git remote add upstream https://github.com/Debian/apt.git
+        git fetch upstream
+        git merge upstream/main -X theirs || echo "up-to-date"
+        git push origin main

@@ -1,0 +1,39 @@
+name: Build & Release Custom APT
+
+on:
+  push: branches: [main]
+  workflow_dispatch:
+  schedule: - cron: '0 0 * * 0'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: { arch: [armhf, amd64] }
+    container: debian:bullseye
+    steps:
+    - uses: actions/checkout@v3
+    - run: apt-get update && apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static
+    - run: apt-get source apt=2.4.11
+    - run: git apply patches/disable-checks.patch
+    - run: |
+        echo -e "Package: apt\nPin: version 2.4.11*\nPin-Priority:1001" > apt/preferences
+    - env: { DEB_BUILD_OPTIONS: nocheck }
+      run: dpkg-buildpackage -us -uc -b -aarmhf --host-arch=${{ matrix.arch }}
+    - uses: actions/upload-artifact@v4
+      with:
+        name: custom-apt-${{ matrix.arch }}
+        path: ../apt_2.4.11*.deb
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4 with: { name: custom-apt-armhf, path: armhf }
+    - uses: actions/download-artifact@v4 with: { name: custom-apt-amd64, path: amd64 }
+    - uses: actions/create-release@v1
+      with: { tag_name: custom-apt-2.4.11, release_name: Custom APT 2.4.11 }
+    - uses: softprops/action-gh-release@v1
+      with: files: |
+        armhf/apt_2.4.11*.deb
+        amd64/apt_2.4.11*.deb

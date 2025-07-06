@@ -1,4 +1,85 @@
-APT
+# Custom APT 2.4.11 (armhf + amd64)
+
+This repository builds a custom APT 2.4.11 package with critical security checks removed, intended solely for testing or isolated environments.
+
+## 🔓 Disabled Features
+
+* GPG signature verification
+* SHA256 hash verification
+* `Valid-Until` expiration checks in Release files
+
+> ⚠️ **Warning: This APT version has disabled security verification features. Do not use in production or connected systems. For chroot or offline testing only.**
+
+---
+
+## ✅ Supported Architectures
+
+* `armhf`
+* `amd64`
+
+Both are automatically built using GitHub Actions.
+
+---
+
+## 📦 Installation
+
+Download the latest `.deb` package from the [Releases page](https://github.com/YOUR_USERNAME/apt/releases).
+
+```bash
+# Download the .deb file for armhf or amd64
+sudo dpkg -i apt_2.4.11*.deb
+```
+
+---
+
+## 🔁 Automation Features
+
+* [x] Auto build & release on `main` push
+* [x] Weekly upstream sync with `Debian/apt`
+* [x] Builds for both `armhf` and `amd64`
+* [x] Manual trigger via `workflow_dispatch`
+
+---
+
+## 🛠 Build Tools & Environment
+
+* GitHub Actions (Debian container-based)
+* Cross-building via QEMU
+* `devscripts`, `fakeroot`, `dpkg-dev`
+* Custom patch to disable integrity checks: `disable-checks.patch`
+
+---
+
+## 📁 Repository Structure
+
+```
+.
+├── patches/
+│   └── disable-checks.patch      # Disables key security checks
+└── .github/workflows/
+    ├── build.yml                 # Builds and releases the package
+    └── upstream-sync.yml         # Weekly sync from Debian upstream
+```
+
+---
+
+## 📘 Notes
+
+* Based on [`Debian/apt`](https://github.com/Debian/apt)
+* Release artifacts are tagged as `custom-apt-2.4.11`
+
+---
+
+## ❗ Disclaimer
+
+This APT version allows installation from unauthenticated sources.
+**Do not use on systems exposed to the Internet or requiring secure package verification.**
+
+---
+
+
+
+APT (Original Readme.md)
 ===
 
 apt is the main command-line package manager for Debian and its derivatives.
