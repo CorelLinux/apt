@@ -25,14 +25,14 @@ jobs:
           curl -s https://api.github.com/repos/Debian/apt/releases/latest | jq -r .tag_name | sed 's/^v//' > latest_version.txt
           echo "APT_VERSION=$(cat latest_version.txt)" >> $GITHUB_ENV
 
-        - run: |
-            apt-get update
-            apt-get install -y \
-              build-essential devscripts fakeroot qemu-user-static curl jq wget \
-              libbz2-dev libdb-dev libssl-dev liblz4-dev liblzma-dev libseccomp-dev \
-              libsystemd-dev libudev-dev libxxhash-dev libzstd-dev zlib1g-dev \
-              cmake docbook-xml docbook-xsl googletest \
-              ninja-build pkg-config po4a triehash xsltproc doxygen graphviz w3m
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential devscripts fakeroot qemu-user-static curl jq wget \
+            libbz2-dev libdb-dev libssl-dev liblz4-dev liblzma-dev libseccomp-dev \
+            libsystemd-dev libudev-dev libxxhash-dev libzstd-dev zlib1g-dev \
+            cmake docbook-xml docbook-xsl googletest \
+            ninja-build pkg-config po4a triehash xsltproc doxygen graphviz w3m
 
 
       - name: Add sid repo and install latest dpkg-dev
