@@ -1,10 +1,10 @@
 name: Build & Release Custom APT
 
 on:
-  push: 
+  push:
     branches: [main]
   workflow_dispatch:
-  schedule: 
+  schedule:
     - cron: '0 0 * * 0'
 
 jobs:
@@ -13,43 +13,66 @@ jobs:
     strategy:
       matrix: { arch: [armhf, amd64] }
     container: debian:bullseye
+    env:
+      DEBIAN_FRONTEND: noninteractive
     steps:
-    - uses: actions/checkout@v3
-    - run: apt-get update && apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static
-    - run: echo 'Acquire::AllowInsecureRepositories "true"; APT::Get::AllowUnauthenticated "true";' | tee /etc/apt/apt.conf.d/99insecure
-    - run: echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" >> /etc/apt/sources.list
-    - run: echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list
-    - run: echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse" >> /etc/apt/sources.list
-    - run: echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
-    - run: apt-get update && apt-get source apt=2.4.11
-    - run: git apply patches/disable-checks.patch
-    - run: |
-        echo -e "Package: apt\nPin: version 2.4.11*\nPin-Priority:1001" > apt/preferences
-    - env: { DEB_BUILD_OPTIONS: nocheck }
-      run: dpkg-buildpackage -us -uc -b -aarmhf --host-arch=${{ matrix.arch }}
-    - uses: actions/upload-artifact@v4
-      with:
-        name: custom-apt-${{ matrix.arch }}
-        path: ../apt_2.4.11*.deb
+      - uses: actions/checkout@v3
+
+      # 1. 최신 apt 버전 GitHub API에서 받아오기 (Debian apt repo)
+      - name: Get latest apt version
+        id: get_version
+        run: |
+          curl -s https://api.github.com/repos/Debian/apt/releases/latest | jq -r .tag_name | sed 's/^v//' > latest_version.txt
+          echo "APT_VERSION=$(cat latest_version.txt)" >> $GITHUB_ENV
+
+      - run: apt-get update && apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl jq
+
+      - run: |
+          echo 'Acquire::AllowInsecureRepositories "true"; APT::Get::AllowUnauthenticated "true";' | tee /etc/apt/apt.conf.d/99insecure
+
+      - run: |
+          echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" >> /etc/apt/sources.list
+
+      - run: apt-get update && apt-get source apt=${{ env.APT_VERSION }}
+
+      - run: git apply patches/disable-checks.patch
+
+      - run: |
+          echo -e "Package: apt\nPin: version ${{ env.APT_VERSION }}*\nPin-Priority: 1001" > apt/preferences
+
+      - env:
+          DEB_BUILD_OPTIONS: nocheck
+        run: dpkg-buildpackage -us -uc -b -a${{ matrix.arch }} --host-arch=${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: custom-apt-${{ matrix.arch }}
+          path: ../apt_${{ env.APT_VERSION }}*.deb
 
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/download-artifact@v4 
-      with: 
-        name: custom-apt-armhf
-        path: armhf
-    - uses: actions/download-artifact@v4 
-      with: 
-        name: custom-apt-amd64
-        path: amd64
-    - uses: actions/create-release@v1
-      with: 
-        tag_name: custom-apt-2.4.11
-        release_name: Custom APT 2.4.11 }
-    - uses: softprops/action-gh-release@v1
-      with: 
-        files: |
-          armhf/apt_2.4.11*.deb
-          amd64/apt_2.4.11*.deb
+      - uses: actions/download-artifact@v4
+        with:
+          name: custom-apt-armhf
+          path: armhf
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: custom-apt-amd64
+          path: amd64
+
+      - uses: actions/create-release@v1
+        with:
+          tag_name: custom-apt-${{ env.APT_VERSION }}
+          release_name: Custom APT ${{ env.APT_VERSION }}
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            armhf/apt_${{ env.APT_VERSION }}*.deb
+            amd64/apt_${{ env.APT_VERSION }}*.deb
