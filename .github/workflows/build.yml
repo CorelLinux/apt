@@ -16,6 +16,17 @@ jobs:
       options: --privileged  # 루트 환경 필요시
       
     steps:
+      - name: ARM 아키텍처 추가 및 소스리스트 설정
+        run: |
+          dpkg --add-architecture armhf
+          cat <<EOF > /etc/apt/sources.list
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy main universe multiverse restricted
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports jammy main universe multiverse restricted
+          deb-src http://archive.ubuntu.com/ubuntu jammy main universe multiverse restricted
+          deb-src http://ports.ubuntu.com/ubuntu-ports jammy main universe multiverse restricted
+          EOF
+          apt-get update
+          
       - name: 필요한 패키지 설치
         run: |
           apt-get update
