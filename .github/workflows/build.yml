@@ -58,6 +58,9 @@ jobs:
       - name: Download apt source
         run: |
           apt-get source apt=${{ env.APT_VERSION }}
+          APT_SRC_DIR=$(find . -maxdepth 1 -type d -name "apt-*")
+          echo "Found source dir: $APT_SRC_DIR"
+          mv "$APT_SRC_DIR" ./apt
           mv apt-* apt-${{ env.APT_VERSION }}
 
       - name: Patch apt source
