@@ -31,6 +31,8 @@ jobs:
           apt-get update
           apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget jq equivs
 
+      - run: apt-get update && apt-get install -y dirmngr
+      
       - name: Add Debian sid GPG keys
         run: |
           apt-get update && apt-get install -y gnupg wget
