@@ -36,7 +36,8 @@ jobs:
 
           echo "Downloading $LATEST_URL"
           wget http://ftp.debian.org/debian/pool/main/d/dpkg/$LATEST_URL
-          apt-get install -y ./$(basename "$LATEST_URL")
+          apt-get install -y ./$(basename "$LATEST_URL") --fix-missing --allow-downgrades --allow-unauthenticated
+          apt-get -f install
 
 
       - run: |
