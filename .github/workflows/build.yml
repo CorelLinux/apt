@@ -1,4 +1,4 @@
-name: Build apt for armhf only
+name: Build apt for armhf only test
 
 on:
   workflow_dispatch:
