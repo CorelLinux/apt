@@ -179,47 +179,44 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Override debian/rules for cross build
-        run: |
-          cat << 'EOF' > ./apt/debian/rules
-            #!/usr/bin/make -f
+      - name: Patch debian/rules with nested override_dh_auto_configure-arch
+  run: |
+    FILE=./apt/debian/rules
 
-            export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-            export DEB_CFLAGS_MAINT_APPEND  = -Wall -Wextra
-            export DEB_CXXFLAGS_MAINT_APPEND  = -Wall -Wextra
+    # 기존 블록 삭제
+    sed -i '/^override_dh_auto_configure-arch:/,/^$/d' "$FILE"
 
-            %:
-              dh $@
+    # 새 블록 삽입 (탭 3개 반영)
+    cat << 'EOF' >> "$FILE"
 
-            override_dh_auto_configure-arch:
-            ifeq ($(DEB_HOST_ARCH),armhf)
-	      dh_auto_configure -- \
-		-DCMAKE_SYSTEM_NAME=Linux \
-		-DCMAKE_SYSTEM_PROCESSOR=arm \
-		-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-		-DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-		-DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \
-		-DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
-		-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-		-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-		-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
-            else ifeq ($(DEB_HOST_ARCH),arm64)
-	      dh_auto_configure -- \
-		-DCMAKE_SYSTEM_NAME=Linux \
-	      	  -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-		  -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-		  -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-		  -DCMAKE_SYSROOT=/usr/aarch64-linux-gnu \
-		  -DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu \
-		  -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-		  -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-		  -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
-            else
-	      dh_auto_configure
-            endif
-            EOF
+	override_dh_auto_configure-arch:
+		ifeq ($(DEB_HOST_ARCH),armhf)
+			dh_auto_configure -- \
+				-DCMAKE_SYSTEM_NAME=Linux \
+				-DCMAKE_SYSTEM_PROCESSOR=arm \
+				-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+				-DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+				-DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \
+				-DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
+				-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+				-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+				-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
+		else ifeq ($(DEB_HOST_ARCH),arm64)
+			dh_auto_configure -- \
+				-DCMAKE_SYSTEM_NAME=Linux \
+				-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+				-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+				-DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+				-DCMAKE_SYSROOT=/usr/aarch64-linux-gnu \
+				-DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu \
+				-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+				-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+				-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
+		else
+			dh_auto_configure
+		endif
 
-            chmod +x ./apt/debian/rules
+      EOF
           
       - name: Build package
         run: |
