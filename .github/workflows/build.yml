@@ -54,24 +54,28 @@ jobs:
           apt-get update
           apt-get install -y equivs devscripts
 
-      - name: Use mk-build-deps to install all apt dependencies
+      - name: Install build dependencies from apt control file
         run: |
           cd apt-${{ env.APT_VERSION }}
           mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
-
+     
       - run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
+          
       - env:
           DEB_BUILD_OPTIONS: nocheck
         run: |
           mkdir -p apt-${{ env.APT_VERSION }}
           echo -e "Package: apt\nPin: version ${{ env.APT_VERSION }}*\nPin-Priority: 1001" > apt-${{ env.APT_VERSION }}/preferences
-
-      - env:
+          
+      - name: Build deb package
+        env:
           DEB_BUILD_OPTIONS: nocheck
-        run: dpkg-buildpackage -us -uc -b -a${{ matrix.arch }} --host-arch=${{ matrix.arch }}
-
+        run: |
+          cd apt-${{ env.APT_VERSION }}
+          dpkg-buildpackage -us -uc -b -a${{ matrix.arch }} --host-arch=${{ matrix.arch }}
+     
       - uses: actions/upload-artifact@v4
         with:
           name: custom-apt-${{ matrix.arch }}
