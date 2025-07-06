@@ -46,11 +46,11 @@ jobs:
       - name: Clean up existing apt sources and import Debian sid GPG keys
         run: |
           # 기존 sources.list 및 sources.list.d 디렉터리 정리
-          sudo rm -f /etc/apt/sources.list
-          sudo rm -rf /etc/apt/sources.list.d/*
+          rm -f /etc/apt/sources.list
+          rm -rf /etc/apt/sources.list.d/*
 
           # Debian 아카이브 키링을 /etc/apt/keyrings/에 다운로드 (이전 충돌 발생 키링)
-          sudo mkdir -p /etc/apt/keyrings
+          mkdir -p /etc/apt/keyrings
           curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | sudo gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
  
           # 새롭게 정리된 sources.list 파일 생성 (다운로드한 키 사용)
@@ -58,7 +58,7 @@ jobs:
           echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | sudo tee -a /etc/apt/sources.list
 
             # 업데이트
-            sudo apt-get update
+            apt-get update
 
       - name: Fix gpg/dirmngr env
         run: |
