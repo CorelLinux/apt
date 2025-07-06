@@ -43,11 +43,28 @@ jobs:
             libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb-dev:armhf
           apt-get install -f
 
-      - name: Import Debian sid GPG keys properly
+      - name: Import Debian sid GPG keys properly # 이 단계는 필요 없어지거나 역할이 변경될 수 있음
         run: |
-          mkdir -p /etc/apt/keyrings
-          curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
+          # 기본적으로 시스템에 존재하는 Debian 아카이브 키링을 사용하므로,
+          # 이 단계에서 수동으로 키를 다운로드하고 설치할 필요가 없을 수 있습니다.
+          # 만약 특정 버전의 키를 강제해야 한다면, 이 키가 유일하게 사용되도록 sources.list를 수정해야 합니다.
+          # 현재 문제 해결을 위해 이 단계를 완전히 제거하거나 비활성화하는 것을 고려해볼 수 있습니다.
+          # 예: mkdir -p /etc/apt/keyrings # 필요하다면 디렉토리 생성
+          # curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg # 이 줄을 주석 처리하거나 삭제
+          echo "Using system default /usr/share/keyrings/debian-archive-keyring.gpg"
+
+      - name: Fix gpg/dirmngr env
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          export GNUPGHOME=~/.gnupg
+
+      - name: Add deb-src and sid repo
+        run: |
+          # Signed-By 경로를 시스템 기본 키링으로 변경
+          echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | tee /etc/apt/sources.list
+          echo "deb-src [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | tee -a /etc/apt/sources.list
+          apt-get update
 
       - name: Fix gpg/dirmngr env
         run: |
