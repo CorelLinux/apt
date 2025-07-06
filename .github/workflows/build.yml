@@ -150,11 +150,10 @@ jobs:
             echo "No gtest-build directory to remove"
           fi
 
-      - name: Cross-compile googletest for armhf
+      - name: Cross-compile Googletest for armhf
         working-directory: ./googletest-1.12.1
         run: |
-          mkdir build && cd build
-
+          mkdir -p build && cd build
           cmake .. \
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_SYSTEM_PROCESSOR=arm \
@@ -164,11 +163,9 @@ jobs:
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-            -DCMAKE_INSTALL_PREFIX=/usr/arm-linux-gnueabihf/usr \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-
+            -DCMAKE_INSTALL_PREFIX=../../gtest-armhf-install
           make -j$(nproc)
+          make install
 
       - name: Install libdb5.3-dev only for target arch
         env:
@@ -185,6 +182,8 @@ jobs:
       - name: Build package
         run: |
           cd ./apt
+          export LDFLAGS="-L$GTEST_LIB_DIR"
+          export CXXFLAGS="-I$GTEST_INCLUDE_DIR"
           dpkg-buildpackage -us -uc -b -a"${{ matrix.arch }}"
 
       - uses: actions/upload-artifact@v4
