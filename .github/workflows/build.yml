@@ -179,10 +179,22 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Patch debian/rules with safe override
+      - name: Patch debian/rules for CMake cross build
         run: |
-          printf 'override_dh_auto_configure-arch:\nifeq ($(DEB_HOST_ARCH),armhf)\n\tdh_auto_configure -- \\\n\t\t-DCMAKE_SYSTEM_NAME=Linux \\\n\t\t-DCMAKE_SYSTEM_PROCESSOR=arm \\\n\t\t-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \\\n\t\t-DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \\\n\t\t-DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \\\n\t\t-DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \\\n\t\t-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \\\n\t\t-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \\\n\t\t-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY\nelse ifeq ($(DEB_HOST_ARCH),arm64)\n\tdh_auto_configure -- \\\n\t\t-DCMAKE_SYSTEM_NAME=Linux \\\n\t\t-DCMAKE_SYSTEM_PROCESSOR=aarch64 \\\n\t\t-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \\\n\t\t-DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \\\n\t\t-DCMAKE_SYSROOT=/usr/aarch64-linux-gnu \\\n\t\t-DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu \\\n\t\t-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \\\n\t\t-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \\\n\t\t-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY\nelse\n\tdh_auto_configure\nendif\n' > ./apt/debian/override.mk
+          FILE=debian/rules
 
+          # override_dh_auto_configure-arch: 블록이 이미 있는지 확인 후 수정 또는 추가
+          if grep -q '^override_dh_auto_configure-arch:' "$FILE"; then
+            sed -i '/^override_dh_auto_configure-arch:/,/^$/c\
+              \t\t\toverride_dh_auto_configure-arch:\n\
+              \t\t\t\tmkdir -p build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake' "$FILE"
+          else
+            printf '\n\t\t\toverride_dh_auto_configure-arch:\n\t\t\t\tmkdir -p build && cd build && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake\n' >> "$FILE"
+          fi
+
+          echo "===== [ debian/rules 전체 출력 ] ====="
+          cat "$FILE"
+          
       - name: Build package
         run: |
           cd ./apt
