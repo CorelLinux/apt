@@ -27,7 +27,7 @@ jobs:
 
       - run: |
           apt-get update
-          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl jq \
+          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl jq dpkg-dev libzstd-dev \
           cmake docbook-xml docbook-xsl googletest libbz2-dev libdb-dev libssl-dev liblz4-dev liblzma-dev libseccomp-dev libsystemd-dev libudev-dev libxxhash-dev ninja-build pkg-config po4a triehash xsltproc zlib1g-dev doxygen graphviz w3m
 
       - run: |
