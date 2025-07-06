@@ -36,6 +36,11 @@ jobs:
           dpkg --add-architecture armhf
           apt-get update
           apt-get install -y crossbuild-essential-armhf
+          apt-get install -y \
+          libbz2-dev:armhf libdb-dev:armhf libssl-dev:armhf liblz4-dev:armhf \
+            liblzma-dev:armhf libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
+            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf
+          apt-get install -f
      
       - run: apt-get update && apt-get install -y dirmngr 
 
