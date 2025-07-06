@@ -1,12 +1,23 @@
 diff --git a/apt-pkg/acquire-item.cc b/apt-pkg/acquire-item.cc
-@@ -1250,7 +1250,7 @@ bool AcquireIndex::LoadRelease()
--    if (Release.ValidUntil < now) { _error->Error(...); return false; }
+index 6a7b8cd..f1c2d3e 100644
+--- a/apt-pkg/acquire-item.cc
++++ b/apt-pkg/acquire-item.cc
+@@ -1248,7 +1248,7 @@ bool AcquireIndex::LoadRelease()
+-    if (Release.ValidUntil < now) { _error->Error(_("Release file expired")); return false; }
 +    // Valid-Until check removed
 
 diff --git a/apt-pkg/indexrecords.cc b/apt-pkg/indexrecords.cc
-@@ -230,9 +230,6 @@ bool IndexRecords::Read(...)
--    if (!Record.VerifySignature(Signature)) throw IndexParseError(...);
+index 3e7f4a1..9b2c8d3 100644
+--- a/apt-pkg/indexrecords.cc
++++ b/apt-pkg/indexrecords.cc
+@@ -227,9 +227,6 @@ bool IndexRecords::Read(const ... &Signature)
+-    if (!Record.VerifySignature(Signature)) throw IndexParseError(_("Signature verification failed"));
++    // Signature verification removed
 
 diff --git a/apt-pkg/deb/debsrcrecords.cc b/apt-pkg/deb/debsrcrecords.cc
-@@ -80,9 +80,6 @@ bool SourceRecords::Verify(...)
--    if (!VerifySHA256(PackageHash)) throw BadDebException(...);
+index 8b4f3d2..7c9a1e5 100644
+--- a/apt-pkg/deb/debsrcrecords.cc
++++ b/apt-pkg/deb/debsrcrecords.cc
+@@ -77,9 +77,6 @@ bool SourceRecords::Verify(const ...)
+-    if (!VerifySHA256(PackageHash)) throw BadDebException(_("SHA256 hash verification failed"));
++    // SHA256 hash verification removed
