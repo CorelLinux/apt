@@ -179,15 +179,13 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Patch debian/rules to fix CMake source dir
+      - name: Fix debian/rules override_dh_auto_configure-arch
         run: |
-          FILE=debian/rules
-          sed -i '/^override_dh_auto_configure-arch:/,/^$/c\
-            \t\t\toverride_dh_auto_configure-arch:\n\
-            \t\t\t\tcd obj-$(DEB_HOST_GNU_TYPE) && cmake $(CURDIR) -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/toolchain.cmake' "$FILE"
-    
+          sed -i '/^override_dh_auto_configure-arch override_dh_auto_configure-indep:/,/^$/c\
+            override_dh_auto_configure-arch override_dh_auto_configure-indep:\n\
+            \t\t\tcd obj-$(DEB_HOST_GNU_TYPE) && cmake $(CURDIR) -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/toolchain.cmake' debian/rules
           echo "===== [ Patched debian/rules ] ====="
-          cat "$FILE"
+          cat debian/rules
           
       - name: Build package
         run: |
