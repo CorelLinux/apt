@@ -80,10 +80,22 @@ jobs:
 
       - name: Download apt source
         run: |
+          echo "Current APT_VERSION: ${{ env.APT_VERSION }}" # 디버깅 라인 추가
+          if [ -z "${{ env.APT_VERSION }}" ]; then
+            echo "Error: APT_VERSION is not set. Please check previous steps."
+            exit 1
+          fi
+
           apt-get source apt=${{ env.APT_VERSION }}
-          APT_SRC_DIR=$(find . -maxdepth 1 -type d -name "apt-${{ env.APT_VERSION }}" | head -n1)
-          if [ -z "$APT_SRC_DIR" ]; then
-            echo "Error: Could not find apt source directory for version ${{ env.APT_VERSION }}"
+          
+          # find 명령을 좀 더 유연하게 변경하거나, 정확한 디렉토리 이름을 바로 사용
+          # APT_SRC_DIR=$(find . -maxdepth 1 -type d -name "apt-${{ env.APT_VERSION }}" | head -n1)
+          # apt-get source가 생성하는 디렉토리 이름은 보통 '패키지이름-버전' 형태이므로 직접 지정
+          APT_SRC_DIR="apt-${{ env.APT_VERSION }}"
+
+          if [ -z "$APT_SRC_DIR" ] || [ ! -d "$APT_SRC_DIR" ]; then # 디렉토리 존재 여부도 확인
+            echo "Error: Could not find apt source directory '$APT_SRC_DIR' for version ${{ env.APT_VERSION }}"
+            ls -l # 현재 디렉토리 내용을 출력하여 디버깅 정보 추가
             exit 1
           fi
           echo "Found APT_SRC_DIR=$APT_SRC_DIR"
