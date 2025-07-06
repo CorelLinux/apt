@@ -1,6 +1,6 @@
 # Custom APT 2.4.11 (armhf + amd64)
 
-This repository builds a custom APT 2.4.11 package with critical security checks removed, intended solely for testing or isolated environments.
+This repository builds a custom APT package with critical security checks removed, intended solely for testing or isolated environments.
 
 ## 🔓 Disabled Features
 
@@ -23,11 +23,11 @@ Both are automatically built using GitHub Actions.
 
 ## 📦 Installation
 
-Download the latest `.deb` package from the [Releases page](https://github.com/YOUR_USERNAME/apt/releases).
+Download the latest `.deb` package from the [Releases page](https://github.com/CorelLinux/apt/releases).
 
 ```bash
 # Download the .deb file for armhf or amd64
-sudo dpkg -i apt_2.4.11*.deb
+sudo dpkg -i apt_version.deb
 ```
 
 ---

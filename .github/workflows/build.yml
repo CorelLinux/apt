@@ -41,9 +41,11 @@ jobs:
       - run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
-
-      - run: |
-          echo -e "Package: apt\nPin: version ${{ env.APT_VERSION }}*\nPin-Priority: 1001" > apt/preferences
+      - env:
+          DEB_BUILD_OPTIONS: nocheck
+        run: |
+          mkdir -p apt-${{ env.APT_VERSION }}
+          echo -e "Package: apt\nPin: version ${{ env.APT_VERSION }}*\nPin-Priority: 1001" > apt-${{ env.APT_VERSION }}/preferences
 
       - env:
           DEB_BUILD_OPTIONS: nocheck
