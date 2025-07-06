@@ -84,7 +84,7 @@ jobs:
           apt-get install -y cmake ninja-build
 
       - name: Build gtest for armhf
-         run: |
+        run: |
           apt-get source googletest
           cd googletest-*
           mkdir build && cd build
