@@ -180,16 +180,16 @@ jobs:
           fi
           
       - name: Patch debian/rules with nested override_dh_auto_configure-arch
-  run: |
-    FILE=./apt/debian/rules
+        run: |
+          FILE=./apt/debian/rules
 
-    # 기존 블록 삭제
-    sed -i '/^override_dh_auto_configure-arch:/,/^$/d' "$FILE"
+          # 기존 블록 삭제
+          sed -i '/^override_dh_auto_configure-arch:/,/^$/d' "$FILE"
 
-    # 새 블록 삽입 (탭 3개 반영)
-    cat << 'EOF' >> "$FILE"
+          # 새 블록 삽입 (탭 3개 반영)
+          cat << 'EOF' >> "$FILE"
 
-	override_dh_auto_configure-arch:
+	      override_dh_auto_configure-arch:
 		ifeq ($(DEB_HOST_ARCH),armhf)
 			dh_auto_configure -- \
 				-DCMAKE_SYSTEM_NAME=Linux \
