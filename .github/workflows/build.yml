@@ -33,12 +33,14 @@ jobs:
 
       - run: apt-get update && apt-get install -y dirmngr
       
-      - name: Add Debian sid GPG keys
+      - name: Fix gpg/dirmngr env and import Debian sid keys
         run: |
-          apt-get update && apt-get install -y gnupg wget
-          # 주요 키 2개 등록
-          gpg --no-default-keyring --keyring /etc/apt/trusted.gpg.d/debian-sid.gpg --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 6ED0E7B82643E131
-      
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          export GNUPGHOME=~/.gnupg
+          gpg --no-default-keyring --keyring /etc/apt/trusted.gpg.d/debian-sid.gpg \
+            --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 6ED0E7B82643E131
+            
       - name: Add deb-src and sid repo
         run: |
           echo "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list
