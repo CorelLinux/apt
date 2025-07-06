@@ -12,58 +12,52 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: arm32v7/debian:bookworm
-
+      image: ubuntu:22.04
+      options: --privileged  # 루트 환경 필요시
+      
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set environment
+      - name: 필요한 패키지 설치
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          echo "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list
           apt-get update
-
-      - name: Install required packages
-        run: |
-          apt-get install -y --no-install-recommends \
+          apt-get install -y \
             build-essential \
+            crossbuild-essential-armhf \
             dpkg-dev \
-            cmake \
-            ninja-build \
-            curl \
-            ca-certificates \
+            fakeroot \
+            devscripts \
             git \
+            curl \
+            wget \
+            ca-certificates \
+            cmake \
+            unzip \
             pkg-config \
-            gcc \
-            g++ \
-            libbz2-dev \
-            libdb-dev \
-            libssl-dev \
-            liblz4-dev \
-            liblzma-dev \
-            libseccomp-dev \
-            libsystemd-dev \
-            libudev-dev \
-            libxxhash-dev \
-            libzstd-dev \
-            zlib1g-dev
+            python3 \
+            libbz2-dev:armhf \
+            libdb-dev:armhf \
+            libssl-dev:armhf \
+            liblz4-dev:armhf \
+            liblzma-dev:armhf \
+            libseccomp-dev:armhf \
+            libsystemd-dev:armhf \
+            libudev-dev:armhf \
+            libxxhash-dev:armhf \
+            libzstd-dev:armhf \
+            zlib1g-dev:armhf
 
-      - name: Download googletest (native armhf build)
-        run: |
-          curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
-          mv googletest-release-1.12.1 googletest
-
-      - name: Build googletest
-        working-directory: ./googletest
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -G Ninja
-          ninja
-          cp lib/*.a /usr/lib/
-          cp -r ../googletest/include /usr/include/gtest
-
-      - name: Extract apt source
+      - name: APT 소스코드 가져오기
         run: |
           apt-get source apt
-          cd apt-* && dpkg-buildpackage -us -uc -b
+          cd apt-*
+          echo "APT source downloaded."
+
+      - name: 환경 설정 및 빌드
+        run: |
+          cd apt-*
+          dpkg-buildpackage -aarmhf -b
+
+      - name: 빌드 결과 저장
+        uses: actions/upload-artifact@v4
+        with:
+          name: apt-debs-armhf
+          path: ../*.deb
