@@ -30,13 +30,7 @@ jobs:
             libbz2-dev libdb-dev libssl-dev liblz4-dev liblzma-dev libseccomp-dev \
             libsystemd-dev libudev-dev libxxhash-dev libzstd-dev zlib1g-dev \
             cmake docbook-xml docbook-xsl googletest \
-            ninja-build pkg-config po4a triehash xsltproc doxygen graphviz w3m
-
-      - name: Add sid repo and install latest dpkg-dev
-        run: |
-          echo 'deb http://deb.debian.org/debian sid main' > /etc/apt/sources.list.d/sid.list
-          apt-get update
-          apt-get install -y -t sid dpkg-dev libdpkg-perl
+            ninja-build pkg-config po4a triehash xsltproc doxygen graphviz w3m dpkg-dev libdpkg-perl
 
       - run: |
           echo 'Acquire::AllowInsecureRepositories "true"; APT::Get::AllowUnauthenticated "true";' | tee /etc/apt/apt.conf.d/99insecure
