@@ -54,11 +54,11 @@ jobs:
           curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
  
           # 새롭게 정리된 sources.list 파일 생성 (다운로드한 키 사용)
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | sudo tee /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | sudo tee -a /etc/apt/sources.list
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | tee /etc/apt/sources.list
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | tee -a /etc/apt/sources.list
 
-            # 업데이트
-            apt-get update
+          # 업데이트
+          apt-get update
 
       - name: Fix gpg/dirmngr env
         run: |
