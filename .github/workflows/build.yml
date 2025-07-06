@@ -31,10 +31,18 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/download-artifact@v4 with: { name: custom-apt-armhf, path: armhf }
-    - uses: actions/download-artifact@v4 with: { name: custom-apt-amd64, path: amd64 }
+    - uses: actions/download-artifact@v4 
+      with: 
+        name: custom-apt-armhf
+        path: armhf
+    - uses: actions/download-artifact@v4 
+      with: 
+        name: custom-apt-amd64
+        path: amd64
     - uses: actions/create-release@v1
-      with: { tag_name: custom-apt-2.4.11, release_name: Custom APT 2.4.11 }
+      with: 
+        tag_name: custom-apt-2.4.11
+        release_name: Custom APT 2.4.11 }
     - uses: softprops/action-gh-release@v1
       with: files: |
         armhf/apt_2.4.11*.deb
