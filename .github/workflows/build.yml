@@ -44,6 +44,7 @@ jobs:
         tag_name: custom-apt-2.4.11
         release_name: Custom APT 2.4.11 }
     - uses: softprops/action-gh-release@v1
-      with: files: |
-        armhf/apt_2.4.11*.deb
-        amd64/apt_2.4.11*.deb
+      with: 
+        files: |
+          armhf/apt_2.4.11*.deb
+          amd64/apt_2.4.11*.deb
