@@ -83,6 +83,13 @@ jobs:
           cd ./apt
           mk-build-deps -i -r -t "apt-get -y --no-install-recommends" || true  # 오류 무시
 
+      - name: Install missing libdb (both armhf and amd64)
+        run: |
+          apt-get update
+          apt-get install -y \
+            libdb5.3-dev:armhf libdb-dev:armhf \
+            libdb5.3-dev:amd64 libdb-dev:amd64
+      
       - name: Build package
         run: |
           cd ./apt
