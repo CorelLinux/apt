@@ -65,19 +65,19 @@ jobs:
       - name: Patch apt source
         run: |
           chmod +x patches/patcher.sh
-          ./patches/patcher.sh apt-${{ env.APT_VERSION }}
+          ./patches/patcher.sh ./apt
 
       - name: Install build dependencies
         run: |
-          cd apt-${{ env.APT_VERSION }}
+          cd ./apt
           mk-build-deps -i -r -t "apt-get -y --no-install-recommends" || true  # 오류 무시
 
       - name: Build package
         run: |
-          cd apt-${{ env.APT_VERSION }}
+          cd ./apt
           dpkg-buildpackage -us -uc -b -a${{ matrix.arch }} --host-arch=${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: custom-apt-${{ matrix.arch }}
-          path: apt-${{ env.APT_VERSION }}/../apt_${{ env.APT_VERSION }}*.deb
+          path: ./apt/../apt_${{ env.APT_VERSION }}*.deb
