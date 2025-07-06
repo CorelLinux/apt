@@ -32,12 +32,12 @@ jobs:
           apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget jq equivs
 
       - name: Enable multiarch and install crossbuild deps
-      run: |
-        dpkg --add-architecture armhf
-        apt-get update
-        apt-get install -y crossbuild-essential-armhf
-
-      - run: apt-get update && apt-get install -y dirmngr
+        run: |
+          dpkg --add-architecture armhf
+          apt-get update
+          apt-get install -y crossbuild-essential-armhf
+     
+      - run: apt-get update && apt-get install -y dirmngr 
 
       - name: Import Debian sid GPG keys properly
         run: |
