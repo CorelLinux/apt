@@ -91,27 +91,29 @@ jobs:
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
             libc6-dev-armhf-cross
 
-      - name: Prepare and build googletest for armhf
-        working-directory: ${{ github.workspace }}
+      - name: Install build deps
         run: |
-          # 클론 및 준비
-          git clone --depth 1 -b v1.16.0 https://github.com/google/googletest.git
-          cd googletest
-          mkdir -p build && cd build
+          apt-get update
+          apt-get install -y \
+            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
+            libc6-dev-armhf-cross \
+            cmake ninja-build
 
-          # CMake로 cross compile 설정
+      - name: Build googletest (armhf cross)
+        working-directory: ./googletest-1.16.0
+        run: |
+          mkdir -p build
+          cd build
           cmake .. \
-          -DCMAKE_SYSTEM_NAME=Linux \
-          -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-          -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-          -DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf/libc \
-          -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
-          -DCMAKE_INSTALL_PREFIX=/usr/arm-linux-gnueabihf \
-          -DBUILD_SHARED_LIBS=OFF \
-          -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-          -G Ninja
-
-          # 빌드
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+            -DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf/libc \
+            -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
+            -DCMAKE_INSTALL_PREFIX=/usr/arm-linux-gnueabihf \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -G Ninja
           ninja
 
       - name: Install build dependencies
