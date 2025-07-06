@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: { arch: [armhf, amd64] }
-    container: debian:sid
+    container: debian:bookworm
     env:
       DEBIAN_FRONTEND: noninteractive
     steps:
@@ -25,11 +25,24 @@ jobs:
           curl -s https://api.github.com/repos/Debian/apt/releases/latest | jq -r .tag_name | sed 's/^v//' > latest_version.txt
           echo "APT_VERSION=$(cat latest_version.txt)" >> $GITHUB_ENV
 
+      - name: Install latest dpkg-dev from Debian sid
+        run: |
+          set -e
+          # 최신 버전 검색
+          LATEST_URL=$(curl -s http://ftp.debian.org/debian/pool/main/d/dpkg/ \
+            | grep -oP 'dpkg-dev_[0-9]+\.[0-9]+\.[0-9]+_all\.deb' \
+            | sort -V | tail -n1)
+
+          echo "Downloading $LATEST_URL"
+          wget http://ftp.debian.org/debian/pool/main/d/dpkg/$LATEST_URL
+          apt-get install -y ./$(basename "$LATEST_URL")
+
+
       - run: |
           apt-get update
           apt-get install -y \
           build-essential devscripts fakeroot qemu-user-static curl jq \
-          dpkg-dev libzstd-dev \
+          libzstd-dev \
           cmake docbook-xml docbook-xsl googletest libbz2-dev libdb-dev libssl-dev \
           liblz4-dev liblzma-dev libseccomp-dev libsystemd-dev libudev-dev libxxhash-dev \
           ninja-build pkg-config po4a triehash xsltproc zlib1g-dev doxygen graphviz w3m
