@@ -181,41 +181,7 @@ jobs:
           
       - name: Patch debian/rules with nested override_dh_auto_configure-arch
         run: |
-          FILE=./apt/debian/rules
-
-          # 기존 블록 삭제
-          sed -i '/^override_dh_auto_configure-arch:/,/^$/d' "$FILE"
-
-          # 새 블록 삽입 (탭 3개 반영)
-          cat << 'EOF' >> "$FILE"
-
-	      override_dh_auto_configure-arch:
-		ifeq ($(DEB_HOST_ARCH),armhf)
-		  dh_auto_configure -- \
-		    -DCMAKE_SYSTEM_NAME=Linux \
-		    -DCMAKE_SYSTEM_PROCESSOR=arm \
-		    -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-		    -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-		    -DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \
-		    -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
-		    -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-	            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-		    -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
-		else ifeq ($(DEB_HOST_ARCH),arm64)
-	          dh_auto_configure -- \
-		    -DCMAKE_SYSTEM_NAME=Linux \
-		    -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-		    -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-		    -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-		    -DCMAKE_SYSROOT=/usr/aarch64-linux-gnu \
-		    -DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu \
-		    -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-		    -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-		    -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
-		else
-		  dh_auto_configure
-		endif
-          EOF
+          FILE=./apt/debian/rules && sed -i '/^override_dh_auto_configure-arch:/,/^$/d' "$FILE" && printf '\n\toverride_dh_auto_configure-arch:\n\t\tifeq ($$(DEB_HOST_ARCH),armhf)\n\t\t\tdh_auto_configure -- \\\n\t\t\t\t-DCMAKE_SYSTEM_NAME=Linux \\\n\t\t\t\t-DCMAKE_SYSTEM_PROCESSOR=arm \\\n\t\t\t\t-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \\\n\t\t\t\t-DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \\\n\t\t\t\t-DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY\n\t\telse ifeq ($$(DEB_HOST_ARCH),arm64)\n\t\t\tdh_auto_configure -- \\\n\t\t\t\t-DCMAKE_SYSTEM_NAME=Linux \\\n\t\t\t\t-DCMAKE_SYSTEM_PROCESSOR=aarch64 \\\n\t\t\t\t-DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \\\n\t\t\t\t-DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \\\n\t\t\t\t-DCMAKE_SYSROOT=/usr/aarch64-linux-gnu \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH=/usr/aarch64-linux-gnu \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \\\n\t\t\t\t-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY\n\t\telse\n\t\t\tdh_auto_configure\n\t\tendif\n' >> "$FILE"
           
       - name: Build package
         run: |
