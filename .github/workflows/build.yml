@@ -44,10 +44,10 @@ jobs:
       - run: apt-get update && apt-get source apt=${{ env.APT_VERSION }}
 
       - name: Rename source directory safely
-          run: |
-            SRC_DIR=$(find . -maxdepth 1 -type d -name 'apt-*' | grep -v '\.git' | head -n1)
-            echo "Found source directory: $SRC_DIR"
-            mv "$SRC_DIR" apt-${{ env.APT_VERSION }}
+        run: |
+          SRC_DIR=$(find . -maxdepth 1 -type d -name 'apt-*' | grep -v '\.git' | head -n1)
+          echo "Found source directory: $SRC_DIR"
+          mv "$SRC_DIR" apt-${{ env.APT_VERSION }}
           
       - name: Install dependencies for mk-build-deps
         run: |
