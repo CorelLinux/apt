@@ -83,15 +83,15 @@ jobs:
           apt-get update
           apt-get install -y cmake ninja-build
 
-     - name: Install cross-compiler and dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          cmake ninja-build build-essential \
-          gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-          libc6-dev-armhf-cross
+      - name: Install cross-compiler and dependencies
+       run: |
+         sudo apt-get update
+         sudo apt-get install -y \
+           cmake ninja-build build-essential \
+           gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
+           libc6-dev-armhf-cross
 
-     - name: Prepare and build googletest for armhf
+      - name: Prepare and build googletest for armhf
         working-directory: ${{ github.workspace }}
         run: |
           # 클론 및 준비
