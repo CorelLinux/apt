@@ -157,6 +157,18 @@ jobs:
             libdb-dev \
             libdb5.3-dev:armhf || echo "libdb5.3-dev:armhf not found, skipping"
 
+      - name: Install libdb5.3-dev only for target arch
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          dpkg --add-architecture armhf
+          apt-get update
+          if [ "$ARCH" = "armhf" ]; then
+            apt-get install -y libdb5.3-dev:armhf libdb-dev:armhf
+          else
+            apt-get install -y libdb5.3-dev libdb-dev
+          fi
+
       - name: Build package
         run: |
           cd ./apt
