@@ -149,14 +149,13 @@ jobs:
           cd ./apt
           mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
 
-      - name: Install libdb5.3-dev only for target arch
+      - name: Install libdb-dev and other build dependencies
         run: |
+          dpkg --add-architecture armhf
           apt-get update
-          if [ "${{ matrix.arch }}" = "armhf" ]; then
-            apt-get install -y libdb5.3-dev:armhf
-          else
-            apt-get install -y libdb5.3-dev
-          fi
+          apt-get install -y \
+            libdb-dev \
+            libdb5.3-dev:armhf || echo "libdb5.3-dev:armhf not found, skipping"
 
       - name: Build package
         run: |
