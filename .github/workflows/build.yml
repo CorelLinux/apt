@@ -83,13 +83,16 @@ jobs:
           cd ./apt
           mk-build-deps -i -r -t "apt-get -y --no-install-recommends" || true  # 오류 무시
 
-      - name: Install missing libdb (both armhf and amd64)
+     - name: Install libdb5.3-dev only for target arch
         run: |
+          dpkg --add-architecture armhf
           apt-get update
-          apt-get install -y \
-            libdb5.3-dev:armhf libdb-dev:armhf \
-            libdb5.3-dev:amd64 libdb-dev:amd64
-      
+          if [ "${{ matrix.arch }}" = "armhf" ]; then
+            apt-get install -y libdb5.3-dev:armhf libdb-dev:armhf
+          else
+            apt-get install -y libdb5.3-dev libdb-dev
+          fi
+    
       - name: Build package
         run: |
           cd ./apt
