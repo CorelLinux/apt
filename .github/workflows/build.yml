@@ -111,14 +111,6 @@ jobs:
           apt-get update
           apt-get install -y cmake ninja-build
 
-      - name: Install cross-compiler and dependencies
-        run: |
-          apt-get update
-          apt-get install -y \
-            cmake ninja-build build-essential \
-            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-            libc6-dev-armhf-cross
-
       - name: Download googletest source
         run: |
           curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
@@ -128,22 +120,15 @@ jobs:
         run: |
           dpkg --add-architecture armhf
           apt-get update
-
           apt-get install -y \
-            cmake ninja-build build-essential \
+            build-essential cmake ninja-build \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
             libc6-dev-armhf-cross \
-            libc6:armhf \
-            libstdc++6:armhf \
-            libgcc-s1:armhf
-
-          echo "Checking sysroot layout:"
-          ls -l /usr/arm-linux-gnueabihf/lib/ || echo "Missing /usr/arm-linux-gnueabihf/lib/"
-          ls -l /usr/arm-linux-gnueabihf/usr/lib/ || echo "Missing /usr/arm-linux-gnueabihf/usr/lib/"
-
-          # ld-linux-armhf.so.3 확인
-          find /usr/arm-linux-gnueabihf -name ld-linux-armhf.so.3 || echo "ld-linux-armhf.so.3 not found"
-
+            libdb5.3-dev:armhf libdb-dev:armhf \
+            libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
+            libssl-dev:armhf zlib1g-dev:armhf liblz4-dev:armhf liblzma-dev:armhf \
+            libxxhash-dev:armhf libzstd-dev:armhf
+            
       - name: Install build dependencies
         run: |
           cd ./apt
@@ -156,6 +141,28 @@ jobs:
           apt-get install -y \
             libdb-dev \
             libdb5.3-dev:armhf || echo "libdb5.3-dev:armhf not found, skipping"
+
+      - name: Cross-compile googletest for armhf
+        working-directory: ./apt/test/libapt/gtest/src
+        run: |
+          rm -rf gtest-build
+          mkdir gtest-build
+          cd gtest-build
+
+          cmake .. \
+            -DCMAKE_SYSTEM_NAME=Linux \
+            -DCMAKE_SYSTEM_PROCESSOR=arm \
+            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+            -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+            -DCMAKE_INSTALL_PREFIX=/usr/arm-linux-gnueabihf/usr \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+
+          make -j$(nproc)
 
       - name: Install libdb5.3-dev only for target arch
         env:
