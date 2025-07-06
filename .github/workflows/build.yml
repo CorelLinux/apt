@@ -78,6 +78,11 @@ jobs:
           chmod +x patches/patcher.sh
           ./patches/patcher.sh ./apt
 
+      - name: Install cmake and dependencies for gtest
+        run: |
+          apt-get update
+          apt-get install -y cmake ninja-build
+
       - name: Build gtest for ${{ matrix.arch }}
         run: |
           apt-get source googletest
