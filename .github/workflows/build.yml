@@ -32,6 +32,12 @@ jobs:
           apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget jq equivs
 
       - run: apt-get update && apt-get install -y dirmngr
+
+      - name: Import Debian sid GPG keys properly
+        run: |
+          mkdir -p /etc/apt/keyrings
+          curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
       
       - name: Fix gpg/dirmngr env and import Debian sid keys
         run: |
