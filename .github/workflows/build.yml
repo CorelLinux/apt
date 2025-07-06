@@ -186,8 +186,8 @@ jobs:
             \t\t\toverride_dh_auto_configure-arch:\n\
             \t\t\t\tcd obj-$(DEB_HOST_GNU_TYPE) && cmake $(CURDIR) -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/toolchain.cmake' "$FILE"
     
-    echo "===== [ Patched debian/rules ] ====="
-    cat "$FILE"
+          echo "===== [ Patched debian/rules ] ====="
+          cat "$FILE"
           
       - name: Build package
         run: |
