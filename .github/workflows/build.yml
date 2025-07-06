@@ -99,8 +99,13 @@ jobs:
             libc6-dev-armhf-cross \
             cmake ninja-build
 
+      - name: Download googletest source
+        run: |
+          curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
+          mv googletest-release-1.12.1 googletest-1.12.1
+
       - name: Build googletest (armhf cross)
-        working-directory: ./googletest-1.16.0
+        working-directory: ./googletest-1.12.1
         run: |
           mkdir -p build
           cd build
@@ -115,7 +120,7 @@ jobs:
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -G Ninja
           ninja
-
+    
       - name: Install build dependencies
         run: |
           cd ./apt
