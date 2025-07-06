@@ -181,12 +181,12 @@ jobs:
           
       - name: Patch debian/rules with safe override
         run: |
-        mkdir -p ./apt/debian && cat << 'EOF' > ./apt/debian/override.mk
-  override_dh_auto_configure-arch:
-  	@echo "Host: $(DEB_HOST_ARCH)"
-  	@if [ "$(DEB_HOST_ARCH)" = "armhf" ]; then dh_auto_configure; elif [ "$(DEB_HOST_ARCH)" = "arm64" ]; then dh_auto_configure; else dh_auto_configure; fi
-  EOF
-          grep -q '^include debian/override.mk' ./apt/debian/rules || echo 'include debian/override.mk' >> ./apt/debian/rules
+          mkdir -p ./apt/debian && cat << 'EOF' > ./apt/debian/override.mk
+    override_dh_auto_configure-arch:
+    	@echo "Host: $(DEB_HOST_ARCH)"
+    	@if [ "$(DEB_HOST_ARCH)" = "armhf" ]; then dh_auto_configure; elif [ "$(DEB_HOST_ARCH)" = "arm64" ]; then dh_auto_configure; else dh_auto_configure; fi
+    EOF
+            grep -q '^include debian/override.mk' ./apt/debian/rules || echo 'include debian/override.mk' >> ./apt/debian/rules
         
       - name: Build package
         run: |
