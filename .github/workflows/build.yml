@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: { arch: [armhf, amd64] }
-    container: debian:sid
+    container: ubuntu:devel
     env:
       DEBIAN_FRONTEND: noninteractive
     steps:
