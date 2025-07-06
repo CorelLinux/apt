@@ -83,7 +83,7 @@ jobs:
           cd ./apt
           mk-build-deps -i -r -t "apt-get -y --no-install-recommends" || true  # 오류 무시
 
-     - name: Install libdb5.3-dev only for target arch
+      - name: Install libdb5.3-dev only for target arch
         run: |
           dpkg --add-architecture armhf
           apt-get update
