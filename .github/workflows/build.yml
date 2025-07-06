@@ -51,7 +51,7 @@ jobs:
 
           # Debian 아카이브 키링을 /etc/apt/keyrings/에 다운로드 (이전 충돌 발생 키링)
           mkdir -p /etc/apt/keyrings
-          curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | sudo gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
+          curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
  
           # 새롭게 정리된 sources.list 파일 생성 (다운로드한 키 사용)
           echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | sudo tee /etc/apt/sources.list
