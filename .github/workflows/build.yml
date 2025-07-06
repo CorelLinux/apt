@@ -124,25 +124,25 @@ jobs:
           curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
           mv googletest-release-1.12.1 googletest-1.12.1
 
-      - name: Build googletest (armhf cross)
-        working-directory: ./googletest-1.12.1
+      - name: Install cross-compiler and dependencies
         run: |
-          mkdir -p build
-          cd build
-          cmake .. \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-            -DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \
-            -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
-            -DCMAKE_INSTALL_PREFIX=/usr/arm-linux-gnueabihf \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-            -G Ninja
-          ninja
-          ninja install # 추가: Gtest를 지정된 설치 경로에 설치
-          file /usr/arm-linux-gnueabihf/lib/libgtest.a # 설치 후 다시 확인
-          file /usr/arm-linux-gnueabihf/lib/libgtest_main.a
+          dpkg --add-architecture armhf
+          apt-get update
+
+          apt-get install -y \
+            cmake ninja-build build-essential \
+            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
+            libc6-dev-armhf-cross \
+            libc6:armhf \
+            libstdc++6:armhf \
+            libgcc-s1:armhf
+
+          echo "Checking sysroot layout:"
+          ls -l /usr/arm-linux-gnueabihf/lib/ || echo "Missing /usr/arm-linux-gnueabihf/lib/"
+          ls -l /usr/arm-linux-gnueabihf/usr/lib/ || echo "Missing /usr/arm-linux-gnueabihf/usr/lib/"
+
+          # ld-linux-armhf.so.3 확인
+          find /usr/arm-linux-gnueabihf -name ld-linux-armhf.so.3 || echo "ld-linux-armhf.so.3 not found"
 
       - name: Install build dependencies
         run: |
