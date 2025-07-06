@@ -179,13 +179,38 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Fix debian/rules override_dh_auto_configure-arch
+      - name: Patch debian/rules to fix override_dh_auto_configure
         run: |
-          sed -i '/^override_dh_auto_configure-arch override_dh_auto_configure-indep:/,/^$/c\
-            override_dh_auto_configure-arch override_dh_auto_configure-indep:\n\
-            \t\t\tcd obj-$(DEB_HOST_GNU_TYPE) && cmake $(CURDIR) -DCMAKE_TOOLCHAIN_FILE=$(CURDIR)/toolchain.cmake' debian/rules
-          echo "===== [ Patched debian/rules ] ====="
-          cat debian/rules
+          sed -i '/^ifneq (\$\(filter pkg\.apt\.nodoxygen,\$\(DEB_BUILD_PROFILES\)\),\)/,/^endif/{
+            d
+          }' debian/rules
+          cat << 'EOF' >> debian/rules
+
+      ifneq ($(filter pkg.apt.nodoxygen,$(DEB_BUILD_PROFILES)),)
+      override_dh_auto_configure-arch: configure_doc_flags=-DWITH_DOC=OFF -DWITH_DOC_MANPAGES=ON -DWITH_DOC_EXAMPLES=ON
+      override_dh_auto_configure-arch:
+      	dh_auto_configure -- -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON $(configure_doc_flags) $(configure_test_flags)
+      override_dh_auto_configure-indep: configure_doc_flags=-DWITH_DOC=OFF -DWITH_DOC_GUIDES=ON -DWITH_DOC_EXAMPLES=ON
+      override_dh_auto_configure-indep:
+	      dh_auto_configure -- -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON $(configure_doc_flags)
+      else
+      ifneq ($(filter nodoc,$(DEB_BUILD_PROFILES)),)
+      override_dh_auto_configure-arch: configure_doc_flags=-DWITH_DOC=OFF
+      override_dh_auto_configure-arch:
+	      dh_auto_configure -- -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON $(configure_doc_flags) $(configure_test_flags)
+      override_dh_auto_configure-indep: configure_doc_flags=-DWITH_DOC=OFF
+      override_dh_auto_configure-indep:
+	      dh_auto_configure -- -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON $(configure_doc_flags)
+      else
+      override_dh_auto_configure-arch: configure_doc_flags=-DWITH_DOC=OFF -DWITH_DOC_MANPAGES=ON -DWITH_DOC_EXAMPLES=ON
+      override_dh_auto_configure-arch:
+	      dh_auto_configure -- -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON $(configure_doc_flags) $(configure_test_flags)
+      override_dh_auto_configure-indep: configure_doc_flags=-DWITH_DOC=ON
+      override_dh_auto_configure-indep:
+	      dh_auto_configure -- -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON $(configure_doc_flags)
+      endif
+      endif
+      EOF
           
       - name: Build package
         run: |
