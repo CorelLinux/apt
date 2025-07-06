@@ -23,13 +23,14 @@ jobs:
       - name: Get latest apt version
         id: get_version
         run: |
+          apt-get update && apt-get install -y jq
           curl -s https://api.github.com/repos/Debian/apt/releases/latest | jq -r .tag_name | sed 's/^v//' > latest_version.txt
           echo "APT_VERSION=$(cat latest_version.txt)" >> $GITHUB_ENV
 
       - name: Install required base tools
         run: |
           apt-get update
-          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget jq equivs libdb-dev 
+          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget equivs dirmngr gnupg
 
       - name: Enable multiarch and install crossbuild deps
         run: |
@@ -37,42 +38,40 @@ jobs:
           apt-get update
           apt-get install -y crossbuild-essential-armhf
           apt-get install -y \
-          libbz2-dev:armhf libdb-dev:armhf libssl-dev:armhf liblz4-dev:armhf \
+            libbz2-dev:armhf libssl-dev:armhf liblz4-dev:armhf \
             liblzma-dev:armhf libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
-            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf
+            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb-dev:armhf
           apt-get install -f
-     
-      - run: apt-get update && apt-get install -y dirmngr 
 
       - name: Import Debian sid GPG keys properly
         run: |
           mkdir -p /etc/apt/keyrings
           curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
           echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
-      
-      - name: Fix gpg/dirmngr env and import Debian sid keys
+
+      - name: Fix gpg/dirmngr env
         run: |
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
           export GNUPGHOME=~/.gnupg
-          echo 'Acquire::AllowInsecureRepositories "true";' > /etc/apt/apt.conf.d/99insecure
-          echo 'APT::Get::AllowUnauthenticated "true";' >> /etc/apt/apt.conf.d/99insecure
-          echo "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list
-          apt-get update
-            
+
       - name: Add deb-src and sid repo
         run: |
-          echo "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list
-          echo "deb-src http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
           apt-get update
 
       - name: Download apt source
         run: |
           apt-get source apt=${{ env.APT_VERSION }}
-          APT_SRC_DIR=$(find . -maxdepth 1 -type d -name "apt-[0-9]*" | head -n1)
+          APT_SRC_DIR=$(find . -maxdepth 1 -type d -name "apt-${{ env.APT_VERSION }}" | head -n1)
+          if [ -z "$APT_SRC_DIR" ]; then
+            echo "Error: Could not find apt source directory for version ${{ env.APT_VERSION }}"
+            exit 1
+          fi
           echo "Found APT_SRC_DIR=$APT_SRC_DIR"
           mv "$APT_SRC_DIR" ./apt
-        
+
       - name: Patch apt source
         run: |
           chmod +x patches/patcher.sh
@@ -91,14 +90,6 @@ jobs:
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
             libc6-dev-armhf-cross
 
-      - name: Install build deps
-        run: |
-          apt-get update
-          apt-get install -y \
-            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-            libc6-dev-armhf-cross \
-            cmake ninja-build
-
       - name: Download googletest source
         run: |
           curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
@@ -113,33 +104,32 @@ jobs:
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
             -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-            -DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf/libc \
+            -DCMAKE_SYSROOT=/usr/arm-linux-gnueabihf \
             -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
             -DCMAKE_INSTALL_PREFIX=/usr/arm-linux-gnueabihf \
             -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
             -G Ninja
           ninja
-    
+
       - name: Install build dependencies
         run: |
           cd ./apt
-          mk-build-deps -i -r -t "apt-get -y --no-install-recommends" || true  # 오류 무시
+          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
 
       - name: Install libdb5.3-dev only for target arch
         run: |
-          dpkg --add-architecture armhf
           apt-get update
           if [ "${{ matrix.arch }}" = "armhf" ]; then
-            apt-get install -y libdb5.3-dev:armhf libdb-dev:armhf
+            apt-get install -y libdb5.3-dev:armhf
           else
-            apt-get install -y libdb5.3-dev libdb-dev
+            apt-get install -y libdb5.3-dev
           fi
-    
+
       - name: Build package
         run: |
           cd ./apt
-          dpkg-buildpackage -us -uc -b -a${{ matrix.arch }} --host-arch=${{ matrix.arch }}
+          dpkg-buildpackage -us -uc -b -a"${{ matrix.arch }}"
 
       - uses: actions/upload-artifact@v4
         with:
