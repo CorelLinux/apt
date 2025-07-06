@@ -16,7 +16,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: apt-get update && apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static
-    - run: apt-get source apt=2.4.11
+    - run: deb-src http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse
+    - run: deb-src http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse
+    - run: deb-src http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse
+    - run: deb-src http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse
+    - run: apt-get update && apt-get source apt=2.4.11
     - run: git apply patches/disable-checks.patch
     - run: |
         echo -e "Package: apt\nPin: version 2.4.11*\nPin-Priority:1001" > apt/preferences
