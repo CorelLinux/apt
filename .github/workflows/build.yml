@@ -28,6 +28,17 @@ jobs:
           apt-get update
           apt-get install -y build-essential crossbuild-essential-armhf libc6-dev
 
+      - name: Install required build dependencies
+        run: |
+          dpkg --add-architecture armhf
+          apt-get update
+
+          # 1. host 아키텍처용 설치
+          apt-get install -y libdb-dev
+
+          # 2. target 아키텍처용 설치
+          apt-get install -y libdb-dev:armhf || echo "optional"
+
       - name: Get latest apt version
         id: get_version
         run: |
