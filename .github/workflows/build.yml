@@ -15,23 +15,7 @@ jobs:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Add Debian Bookworm Repo and Install Keyring
-        run: |
-          # sources.list를 새로 작성. 기존 내용은 모두 지워짐.
-          echo "" > /etc/apt/sources.list
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
-          # deb-src 추가
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
-          
-          # debian-archive-keyring 설치
-          apt-get update
-          apt-get install -y debian-archive-keyring
-
-      - name: Install dependencies (apt, build-essential, etc)
+     - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
         run: |
           apt-get update # sources.list가 새로 추가되었으므로 다시 업데이트
@@ -99,23 +83,6 @@ jobs:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Add Debian Bookworm Repo and Install Keyring
-        run: |
-          # sources.list를 새로 작성. 기존 내용은 모두 지워짐.
-          # armhf 컨테이너이므로 arch=armhf 명시
-          echo "" > /etc/apt/sources.list
-          echo "deb [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
-          echo "deb [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
-          echo "deb [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
-          # deb-src 추가
-          echo "deb-src [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
-          echo "deb-src [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
-          echo "deb-src [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
-
-          # debian-archive-keyring 설치
-          apt-get update
-          apt-get install -y debian-archive-keyring
-        
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
         run: |
