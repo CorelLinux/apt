@@ -45,7 +45,7 @@ jobs:
             po4a \
             triehash \
             zlib1g-dev \
-            doxygen # googletest와 libgtest-dev는 이제 직접 빌드하므로 목록에서 제거
+            doxygen
 
       - name: Download and Extract Googletest (amd64)
         working-directory: /home/runner/work/apt/apt # main working directory
@@ -118,7 +118,7 @@ jobs:
             po4a \
             triehash \
             zlib1g-dev \
-            doxygen # googletest와 libgtest-dev는 이제 직접 빌드하므로 목록에서 제거
+            doxygen
 
       - name: Download and Extract Googletest (armhf)
         working-directory: /home/runner/work/apt/apt # main working directory
