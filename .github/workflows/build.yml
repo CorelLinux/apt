@@ -125,7 +125,8 @@ jobs:
             googletest:armhf \
             libgtest-dev:armhf \
             zlib1g-dev:armhf \
-            doxygen
+            doxygen \
+            wget
           which dh
 
       - name: Reinstall debhelper (Safeguard)
