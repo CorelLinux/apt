@@ -34,16 +34,16 @@ jobs:
             devscripts \
             fakeroot \
             dpkg-dev \
-            libssl-dev:armhf \
-            libdb-dev:armhf \
-            libbz2-dev:armhf \
-            liblzma-dev:armhf \
-            liblz4-dev:armhf \
-            libzstd-dev:armhf \
-            libudev-dev:armhf \
-            libsystemd-dev:armhf \
-            libseccomp-dev:armhf \
-            libxxhash-dev:armhf \
+            libssl-dev \
+            libdb-dev \
+            libbz2-dev \
+            liblzma-dev \
+            liblz4-dev \
+            libzstd-dev \
+            libudev-dev \
+            libsystemd-dev \
+            libseccomp-dev \
+            libxxhash-dev \
             docbook-xml \
             docbook-xsl \
             xsltproc \
