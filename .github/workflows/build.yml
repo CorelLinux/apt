@@ -10,10 +10,22 @@ jobs:
   build-amd64:
     runs-on: ubuntu-latest
     container:
-      image: debian:bookworm
+      image: ubuntu:24.04
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
+
+      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
+        run: |
+          UBUNTU_CODENAME="noble"
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
 
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
@@ -67,11 +79,23 @@ jobs:
   build-armhf:
     runs-on: ubuntu-latest
     container:
-      image: debian:bookworm
+      image: ubuntu:24.04
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
+      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
+        run: |
+          UBUNTU_CODENAME="noble"
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+        
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
@@ -103,7 +127,7 @@ jobs:
             po4a \
             googletest:armhf \
             libgtest-dev:armhf \
-            triehash:armhf \
+            libtriehash-dev:armhf \
             zlib1g-dev:armhf \
             doxygen
 
