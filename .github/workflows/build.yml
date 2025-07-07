@@ -27,21 +27,28 @@ jobs:
           apt_version=$(apt-cache policy apt | awk '/Candidate:/ { print $2 }')
           echo "APT_VERSION=$apt_version" >> $GITHUB_ENV
  
-      - name: Install required base tools
-        run: |
-          apt-get update
-          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget equivs dirmngr gnupg
-
       - name: Enable multiarch and install crossbuild deps
         run: |
           dpkg --add-architecture armhf
           apt-get update
-          apt-get install -y crossbuild-essential-armhf
+          apt-get install -y crossbuild-essential-armhf libdb-dev:armhf
+
+      - name: Install base build tools
+        run: |
+          apt-get update
+          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget equivs dirmngr gnupg cmake ninja-build pkg-config
+
+      - name: Install remaining crossbuild deps
+        run: |
           apt-get install -y \
             libbz2-dev:armhf libssl-dev:armhf liblz4-dev:armhf \
             liblzma-dev:armhf libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
-            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb-dev:armhf 
-          apt-get install -f
+            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb5.3-dev:armhf
+
+      - name: Pre-satisfy build deps via mk-build-deps
+        run: |
+          cd ./apt
+          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
 
       - name: Clean up existing apt sources and import Debian sid GPG keys
         run: |
@@ -59,12 +66,6 @@ jobs:
 
           # 업데이트
           apt-get update
-
-      - name: Fix gpg/dirmngr env
-        run: |
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
-          export GNUPGHOME=~/.gnupg
 
       - name: Fix gpg/dirmngr env
         run: |
