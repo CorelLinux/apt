@@ -82,7 +82,21 @@ jobs:
       - name: Build (amd64)
         working-directory: /home/runner/work/apt/apt
         run: |
-          dpkg-buildpackage -us -uc -b 
+          dpkg-buildpackage -us -uc -b
+
+      - name: Install and Test APT Package (amd64)
+        working-directory: /home/runner/work/apt # .deb 파일이 생성되는 상위 디렉토리
+        run: |
+          echo "--- Installing built .deb packages ---"
+          sudo dpkg -i *.deb || sudo apt-get install -f # 의존성 문제 발생 시 해결 시도
+          
+          echo "--- Verifying APT version ---"
+          apt --version
+          
+          echo "--- Running basic apt commands ---"
+          sudo apt update # 저장소 업데이트 시도
+          sudo apt search apt # apt 패키지 검색 시도
+          echo "APT package basic tests completed."
 
   build-armhf:
     runs-on: ubuntu-latest
