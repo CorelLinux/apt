@@ -15,43 +15,47 @@ jobs:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Add Ubuntu Repo (Fixed to Noble Numbat) # 개발 버전 자동 감지 대신 명시적으로 Noble 사용
+      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
         run: |
-          # 24.04 LTS (Noble Numbat)의 레포지토리
-          # 개발 버전을 계속 쓰고 싶다면, 다음 개발 버전 코드네임으로 수동으로 업데이트 필요
           UBUNTU_CODENAME="noble"
-          
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+        
+      - name: Verify sources.list content
+        run: cat /etc/apt/sources.list
 
-      - name: Install dependencies (apt, build-essential, etc)
+      - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
+          dpkg --add-architecture amd64
           apt-get update
+          echo "--- apt-cache search crossbuild-essential-armhf results ---"
+          apt-cache search crossbuild-essential-armhf # crossbuild-essential-armhf 검색 결과 확인
+          echo "---------------------------------------------------------"
           apt-get install -y \
-            build-essential \
+            crossbuild-essential-armhf \
             cmake \
             ninja-build \
             pkg-config \
-            dpkg-dev \
             devscripts \
             fakeroot \
-            libssl-dev \
-            libdb-dev \
-            libbz2-dev \
-            liblzma-dev \
-            liblz4-dev \
-            libzstd-dev \
-            libudev-dev \
-            libsystemd-dev \
-            libseccomp-dev \
-            libxxhash-dev \
+            dpkg-dev \
+            libssl-dev:armhf \
+            libdb-dev:armhf \
+            libbz2-dev:armhf \
+            liblzma-dev:armhf \
+            liblz4-dev:armhf \
+            libzstd-dev:armhf \
+            libudev-dev:armhf \
+            libsystemd-dev:armhf \
+            libseccomp-dev:armhf \
+            libxxhash-dev:armhf \
             docbook-xml \
             docbook-xsl \
             xsltproc \
@@ -63,6 +67,7 @@ jobs:
             triehash \
             zlib1g-dev \
             doxygen
+
 
           # googletest 준비
           cd /usr/src
@@ -93,26 +98,29 @@ jobs:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Add Ubuntu Repo (Fixed to Noble Numbat) # 개발 버전 자동 감지 대신 명시적으로 Noble 사용
+      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
         run: |
-          # 24.04 LTS (Noble Numbat)의 레포지토리
-          # 개발 버전을 계속 쓰고 싶다면, 다음 개발 버전 코드네임으로 수동으로 업데이트 필요
           UBUNTU_CODENAME="noble"
-          
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
         
+      - name: Verify sources.list content
+        run: cat /etc/apt/sources.list
+
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
           dpkg --add-architecture armhf
           apt-get update
+          echo "--- apt-cache search crossbuild-essential-armhf results ---"
+          apt-cache search crossbuild-essential-armhf # crossbuild-essential-armhf 검색 결과 확인
+          echo "---------------------------------------------------------"
           apt-get install -y \
             crossbuild-essential-armhf \
             cmake \
@@ -142,6 +150,7 @@ jobs:
             triehash \
             zlib1g-dev \
             doxygen
+
 
           # googletest 준비
           cd /usr/src
