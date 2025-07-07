@@ -179,7 +179,7 @@ jobs:
           export DEB_HOST_MULTIARCH=arm-linux-gnueabihf
           
           DEB_BUILD_OPTIONS=nocheck
-          dpkg-buildpackage -us -uc -b -aarmhf --no-sign
+          dpkg-buildpackage -us -uc -b -d -aarmhf --no-sign
 
       - name: Upload APT .deb Artifacts (armhf)
         uses: actions/upload-artifact@v4
