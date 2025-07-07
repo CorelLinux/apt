@@ -167,18 +167,6 @@ jobs:
           make -j$(nproc)
           make install
 
-      - name: Install libdb5.3-dev only for target arch
-        env:
-          ARCH: ${{ matrix.arch }}
-        run: |
-          dpkg --add-architecture armhf
-          apt-get update
-          if [ "$ARCH" = "armhf" ]; then
-            apt-get install -y libdb5.3-dev:armhf libdb-dev:armhf
-          else
-            apt-get install -y libdb5.3-dev libdb-dev
-          fi
-          
       - name: Patch debian/rules to force Threads_FOUND
         run: |
           cat << 'EOF' > debian/rules
