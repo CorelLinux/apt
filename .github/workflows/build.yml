@@ -185,6 +185,11 @@ jobs:
           sed -i '/^override_dh_auto_configure-arch/,/^endif/ d' debian/rules
           # 새로운 override_dh_auto_configure-* 블록 삽입
           echo -e '\noverride_dh_auto_configure:\n\t\tdh_auto_configure -- -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON -DWITH_DOC=OFF -DWITH_DOC_MANPAGES=ON -DWITH_DOC_EXAMPLES=ON $(configure_test_flags)' >> debian/rules
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential cmake ninja-build pkg-config
           
       - name: Build package
         run: |
