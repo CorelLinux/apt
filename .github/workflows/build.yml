@@ -12,7 +12,11 @@ jobs:
     container:
       image: debian:bookworm
     steps:
+      - name: Prepare working directory
+        run: mkdir -p /home/runner/work/apt/apt
+
       - name: Install dependencies (apt, build-essential, etc)
+        working-directory: /home/runner/work/apt/apt
         run: |
           apt-get update
           apt-get install -y \
@@ -42,9 +46,11 @@ jobs:
 
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          path: /home/runner/work/apt/apt
 
       - name: Build (amd64)
-        working-directory: .${{ github.workspace }}
+        working-directory: /home/runner/work/apt/apt
         run: |
           dpkg-buildpackage -us -uc -b
 
@@ -53,7 +59,11 @@ jobs:
     container:
       image: debian:bookworm
     steps:
+      - name: Prepare working directory
+        run: mkdir -p /home/runner/work/apt/apt
+        
       - name: Install cross toolchain & deps
+        working-directory: /home/runner/work/apt/apt
         run: |
           dpkg --add-architecture armhf
           apt-get update
@@ -84,8 +94,10 @@ jobs:
 
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          path: /home/runner/work/apt/apt
 
       - name: Build (armhf)
-        working-directory: .${{ github.workspace }}
+        working-directory: /home/runner/work/apt/apt
         run: |
           dpkg-buildpackage -us -uc -b -aarmhf
