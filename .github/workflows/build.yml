@@ -82,7 +82,7 @@ jobs:
       - name: Build (amd64)
         working-directory: /home/runner/work/apt/apt
         run: |
-          dpkg-buildpackage -us -uc -b -ddebhelper-compat
+          dpkg-buildpackage -us -uc -b 
 
   build-armhf:
     runs-on: ubuntu-latest
@@ -124,7 +124,6 @@ jobs:
             po4a \
             googletest:armhf \
             libgtest-dev:armhf \
-            triehash:armhf \
             zlib1g-dev:armhf \
             doxygen
           which dh
@@ -153,4 +152,4 @@ jobs:
           export AR=arm-linux-gnueabihf-ar
           export DEB_HOST_MULTIARCH=arm-linux-gnueabihf
           
-          dpkg-buildpackage -us -uc -b -aarmhf -ddebhelper-compat
+          dpkg-buildpackage -us -uc -b -aarmhf -d
