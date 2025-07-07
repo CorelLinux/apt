@@ -74,44 +74,57 @@ jobs:
           dpkg-buildpackage -us -uc -b
 
   build-armhf:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # GitHub Actions에서 공식적으로 지원하는 ARM64 런너
+    architecture: arm64 # ARM64 런너를 명시
     container:
-      image: arm32v7/ubuntu
+      image: arm64v8/ubuntu:24.04 # ARM64 컨테이너 이미지 사용
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3 # <-- 이 액션 추가!
-        with:
-          platforms: all # 모든 아키텍처 에뮬레이션 지원
-
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
-        
+
+      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
+        run: |
+          UBUNTU_CODENAME="noble"
+          # arm64와 armhf 패키지를 모두 가져오도록 명시 (크로스 컴파일용)
+          echo "deb [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=arm64,armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+
       - name: Verify sources.list content
         run: cat /etc/apt/sources.list
 
-      - name: Install cross toolchain & deps
+      - name: Install cross toolchain & deps # <-- 이름 변경
         working-directory: /home/runner/work/apt/apt
         run: |
+          dpkg --add-architecture armhf # <-- armhf 아키텍처 다시 추가
           apt-get clean
           apt-get update
+          echo "--- apt-cache search crossbuild-essential-armhf results ---"
+          apt-cache search crossbuild-essential-armhf
+          echo "---------------------------------------------------------"
           apt-get install -y \
-            crossbuild-essential-armhf \
+            crossbuild-essential-armhf \ # <-- 크로스 컴파일 도구 설치
             cmake \
             ninja-build \
             pkg-config \
             devscripts \
             fakeroot \
             dpkg-dev \
-            libssl-dev \
-            libdb-dev \
-            libbz2-dev \
-            liblzma-dev \
-            liblz4-dev \
-            libzstd-dev \
-            libudev-dev \
-            libsystemd-dev \
-            libseccomp-dev \
-            libxxhash-devf \
+            libssl-dev:armhf \ # <-- armhf용 라이브러리 명시
+            libdb-dev:armhf \
+            libbz2-dev:armhf \
+            liblzma-dev:armhf \
+            liblz4-dev:armhf \
+            libzstd-dev:armhf \
+            libudev-dev:armhf \
+            libsystemd-dev:armhf \
+            libseccomp-dev:armhf \
+            libxxhash-dev:armhf \
             docbook-xml \
             docbook-xsl \
             xsltproc \
@@ -124,7 +137,7 @@ jobs:
             zlib1g-dev \
             doxygen
 
-          # googletest 준비
+          # googletest 준비 (여기서 armhf용 빌드를 해야 할 수도 있음. 상황에 따라 조정 필요)
           cd /usr/src
           git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
           cd googletest && cmake -B build && cmake --build build
