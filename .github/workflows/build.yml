@@ -12,11 +12,6 @@ jobs:
     container:
       image: ubuntu:24.04
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all # 모든 아키텍처 에뮬레이션 지원
-
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
         
@@ -81,8 +76,13 @@ jobs:
   build-armhf:
     runs-on: ubuntu-latest
     container:
-      image: arm32v7/ubuntu:24.04
+      image: arm32v7/ubuntu
     steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3 # <-- 이 액션 추가!
+        with:
+          platforms: all # 모든 아키텍처 에뮬레이션 지원
+
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
         
