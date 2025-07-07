@@ -1,221 +1,58 @@
-name: Build & Release Custom APT
+name: Build APT (amd64 + armhf)
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'
+    branches: [ main ]
+  pull_request:
 
 jobs:
-  build:
+  build-amd64:
+    name: Build on amd64
     runs-on: ubuntu-latest
-    strategy:
-      matrix: { arch: [armhf, amd64] }
-    container: debian:sid
-    env:
-      DEBIAN_FRONTEND: noninteractive
+    container:
+      image: debian:sid
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up build deps
+      - name: Install dependencies (amd64)
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            build-essential devscripts debhelper cmake ninja-build \
+            pkg-config libdb-dev libbz2-dev liblz4-dev liblzma-dev \
+            libzstd-dev libudev-dev libsystemd-dev libseccomp-dev \
+            libxxhash-dev zlib1g-dev perl doxygen
+
+      - name: Build APT (amd64)
+        run: |
+          dpkg-buildpackage -us -uc -b -aamd64
+
+  build-armhf:
+    name: Build on armhf (cross)
+    runs-on: ubuntu-latest
+    container:
+      image: debian:sid
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies for cross build (armhf)
         run: |
           dpkg --add-architecture armhf
           apt-get update
-          apt-get install -y build-essential crossbuild-essential-armhf libc6-dev
-
-      - name: Install required build dependencies
-        run: |
-          dpkg --add-architecture armhf
-          apt-get update
-
-          # 1. host 아키텍처용 설치
-          apt-get install -y libdb-dev
-
-          # 2. target 아키텍처용 설치
-          apt-get install -y libdb-dev:armhf || echo "optional"
-
-      - name: Get latest apt version
-        id: get_version
-        run: |
-          apt-get update -qq
-          apt_version=$(apt-cache policy apt | awk '/Candidate:/ { print $2 }')
-          echo "APT_VERSION=$apt_version" >> $GITHUB_ENV
- 
-      - name: Enable multiarch and install crossbuild deps
-        run: |
-          dpkg --add-architecture armhf
-          apt-get update
-          apt-get install -y crossbuild-essential-armhf libdb-dev:armhf
-
-      - name: Install base build tools
-        run: |
-          apt-get update
-          apt-get install -y build-essential devscripts fakeroot dpkg-dev qemu-user-static curl wget equivs dirmngr gnupg cmake ninja-build pkg-config
-
-      - name: Install remaining crossbuild deps
-        run: |
-          apt-get install -y \
-            libbz2-dev:armhf libssl-dev:armhf liblz4-dev:armhf \
-            liblzma-dev:armhf libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
-            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb5.3-dev:armhf
-
-      - name: Clean up existing apt sources and import Debian sid GPG keys
-        run: |
-          # 기존 sources.list 및 sources.list.d 디렉터리 정리
-          rm -f /etc/apt/sources.list
-          rm -rf /etc/apt/sources.list.d/*
-
-          # Debian 아카이브 키링을 /etc/apt/keyrings/에 다운로드 (이전 충돌 발생 키링)
-          mkdir -p /etc/apt/keyrings
-          curl -fsSL https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor -o /etc/apt/keyrings/debian-archive-keyring.gpg
- 
-          # 새롭게 정리된 sources.list 파일 생성 (다운로드한 키 사용)
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | tee /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" | tee -a /etc/apt/sources.list
-
-          # 업데이트
-          apt-get update
-
-      - name: Fix gpg/dirmngr env
-        run: |
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
-          export GNUPGHOME=~/.gnupg
-
-      - name: Add deb-src and sid repo
-        run: |
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
-          apt-get update
-
-      - name: Download apt source
-        run: |
-          echo "Current APT_VERSION: ${{ env.APT_VERSION }}" # 디버깅 라인 추가
-          if [ -z "${{ env.APT_VERSION }}" ]; then
-            echo "Error: APT_VERSION is not set. Please check previous steps."
-            exit 1
-          fi
-
-          apt-get source apt=${{ env.APT_VERSION }}
-          
-          # find 명령을 좀 더 유연하게 변경하거나, 정확한 디렉토리 이름을 바로 사용
-          # APT_SRC_DIR=$(find . -maxdepth 1 -type d -name "apt-${{ env.APT_VERSION }}" | head -n1)
-          # apt-get source가 생성하는 디렉토리 이름은 보통 '패키지이름-버전' 형태이므로 직접 지정
-          APT_SRC_DIR="apt-${{ env.APT_VERSION }}"
-
-          if [ -z "$APT_SRC_DIR" ] || [ ! -d "$APT_SRC_DIR" ]; then # 디렉토리 존재 여부도 확인
-            echo "Error: Could not find apt source directory '$APT_SRC_DIR' for version ${{ env.APT_VERSION }}"
-            ls -l # 현재 디렉토리 내용을 출력하여 디버깅 정보 추가
-            exit 1
-          fi
-          echo "Found APT_SRC_DIR=$APT_SRC_DIR"
-          mv "$APT_SRC_DIR" ./apt
-
-      - name: Patch apt source
-        run: |
-          chmod +x patches/patcher.sh
-          ./patches/patcher.sh ./apt
-
-      - name: Install cmake and dependencies for gtest
-        run: |
-          apt-get update
-          apt-get install -y cmake ninja-build
-
-      - name: Download googletest source
-        run: |
-          curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
-          mv googletest-release-1.12.1 googletest-1.12.1
-
-      - name: Install cross-compiler and dependencies
-        run: |
-          dpkg --add-architecture armhf
-          apt-get update
-          apt-get install -y \
-            build-essential cmake ninja-build \
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            build-essential crossbuild-essential-armhf \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-            libc6-dev-armhf-cross \
-            libdb5.3-dev:armhf libdb-dev:armhf \
-            libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
-            libssl-dev:armhf zlib1g-dev:armhf liblz4-dev:armhf liblzma-dev:armhf \
-            libxxhash-dev:armhf libzstd-dev:armhf libpthread-stubs0-dev
+            debhelper cmake ninja-build pkg-config \
+            libdb-dev:armhf libbz2-dev:armhf liblz4-dev:armhf \
+            liblzma-dev:armhf libzstd-dev:armhf libudev-dev:armhf \
+            libsystemd-dev:armhf libseccomp-dev:armhf libxxhash-dev:armhf \
+            zlib1g-dev:armhf perl doxygen
 
-      - name: Install build dependencies
+      - name: Set env and build APT (armhf)
+        env:
+          CC: arm-linux-gnueabihf-gcc
+          CXX: arm-linux-gnueabihf-g++
         run: |
-          cd ./apt
-          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
-
-      - name: Install libdb-dev and other build dependencies
-        run: |
-          dpkg --add-architecture armhf
-          apt-get update
-          apt-get install -y \
-            libdb-dev \
-            libdb5.3-dev:armhf || echo "libdb5.3-dev:armhf not found, skipping"
-
-      - name: Pre-satisfy build deps via mk-build-deps
-        run: |
-          cd ./apt
-          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
-            
-      - name: Remove gtest build directory if exists
-        run: |
-          if [ -d ./apt/test/libapt/gtest/src/gtest-build ]; then
-            rm -rf ./apt/test/libapt/gtest/src/gtest-build
-          else
-            echo "No gtest-build directory to remove"
-          fi
-
-      - name: Cross-compile Googletest for armhf
-        working-directory: ./googletest-1.12.1
-        run: |
-          mkdir -p build && cd build
-          cmake .. \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_SYSTEM_PROCESSOR=arm \
-            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-            -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-            -DCMAKE_INSTALL_PREFIX=../../gtest-armhf-install
-          make -j$(nproc)
-          make install
-
-      - name: Patch debian/rules
-        run: echo -e '#!/usr/bin/make -f\nexport DEB_LDFLAGS_MAINT_APPEND := -Wl,--as-needed\nexport DEB_BUILD_MAINT_OPTIONS := hardening=+all\nexport DPKG_GENSYMBOLS_CHECK_LEVEL=0\nexport CTEST_OUTPUT_ON_FAILURE=1\n\n%:\n\tdh $@ --buildsystem=cmake+ninja\n\noverride_dh_auto_configure:\n\tdh_auto_configure -- \\\n\t\t-DCMAKE_BUILD_TYPE=Release \\\n\t\t-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \\\n\t\t-DWITH_DOC=OFF \\\n\t\t-DWITH_DOC_MANPAGES=ON \\\n\t\t-DWITH_DOC_EXAMPLES=ON \\\n\t\t-DThreads_FOUND=TRUE' > debian/rules
-
-      - name: Install build dependencies
-        run: |
-          apt-get update
-          apt-get install -y build-essential cmake ninja-build pkg-config
-
-      - name: Install native build dependencies
-        run: |
-          apt-get update
-          apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            pkg-config \
-            libc6-dev \
-            libpthread-stubs0-dev
-          
-      - name: Build package
-        run: |
-          cd ./apt
-          export LDFLAGS="-L$GTEST_LIB_DIR -pthread"
-          export CXXFLAGS="-I$GTEST_INCLUDE_DIR -pthread"
-          export CFLAGS="-pthread"
-          export DEB_CMAKE_EXTRA_FLAGS="-DCMAKE_C_FLAGS='-pthread' -DCMAKE_EXE_LINKER_FLAGS='-pthread'"
-          dpkg-buildpackage -us -uc -b -a"${{ matrix.arch }}"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: custom-apt-${{ matrix.arch }}
-          path: ./apt/../apt_${{ env.APT_VERSION }}*.deb
+          dpkg-buildpackage -us -uc -b -aarmhf
