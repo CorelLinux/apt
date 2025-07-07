@@ -1,4 +1,4 @@
-name: Build APT Package (amd64 & armhf)
+Name: Build APT Package (amd64 & armhf)
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
   build-amd64:
     runs-on: ubuntu-latest
     container:
-      image: debian:bookworm # amd64용 Debian Bookworm 이미지
+      image: debian:bookworm
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
@@ -18,8 +18,9 @@ jobs:
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
         run: |
-          apt-get update # sources.list가 새로 추가되었으므로 다시 업데이트
-          apt-get install -y build-essential\
+          apt-get update
+          apt-get install -y \
+            build-essential \
             cmake \
             ninja-build \
             pkg-config \
@@ -42,7 +43,7 @@ jobs:
             graphviz \
             w3m \
             po4a \
-            googletest \ 
+            googletest \
             libgtest-dev \
             triehash \
             zlib1g-dev \
@@ -59,7 +60,7 @@ jobs:
         with:
           path: /home/runner/work/apt/apt
 
-      - name: Patch APT source
+      - name: Patch APT source # <-- 이 스텝 추가!
         run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
@@ -70,46 +71,43 @@ jobs:
           dpkg-buildpackage -us -uc -b
 
   build-armhf:
-    runs-on: ubuntu-latest # AMD64 런너 그대로 사용
+    runs-on: ubuntu-latest
     container:
-      image: arm32v7/debian:bookworm # armhf용 Debian Bookworm 이미지 (QEMU로 에뮬레이션)
+      image: debian:bookworm
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all
-
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Install dependencies (apt, build-essential, etc)
+      - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
-          apt-get update # sources.list가 새로 추가되었으므로 다시 업데이트
-          apt-get install -y build-essential \
+          dpkg --add-architecture armhf
+          apt-get update
+          apt-get install -y \
+            crossbuild-essential-armhf \
             cmake \
             ninja-build \
             pkg-config \
             devscripts \
             fakeroot \
             dpkg-dev \
-            libssl-dev \
-            libdb-dev \
-            libbz2-dev \
-            liblzma-dev \
-            liblz4-dev \
-            libzstd-dev \
-            libudev-dev \
-            libsystemd-dev \
-            libseccomp-dev \
-            libxxhash-dev \
+            libssl-dev:armhf \
+            libdb-dev:armhf \
+            libbz2-dev:armhf \
+            liblzma-dev:armhf \
+            liblz4-dev:armhf \
+            libzstd-dev:armhf \
+            libudev-dev:armhf \
+            libsystemd-dev:armhf \
+            libseccomp-dev:armhf \
+            libxxhash-dev:armhf \
             docbook-xml \
             docbook-xsl \
             xsltproc \
             graphviz \
             w3m \
             po4a \
-            googletest \ 
+            googletest \
             libgtest-dev \
             triehash \
             zlib1g-dev \
@@ -126,7 +124,7 @@ jobs:
         with:
           path: /home/runner/work/apt/apt
 
-      - name: Patch APT source
+      - name: Patch APT source # <-- 이 스텝 추가!
         run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
