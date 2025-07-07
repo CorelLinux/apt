@@ -1,66 +1,37 @@
 #!/bin/bash
 set -e
 
-patch_line_by_keyword() {
-  local file="$1"
-  local keyword="$2"
-  local found=0
+file="apt-pkg/acquire-item.cc"
 
-  grep -n "$keyword" "$file" | while IFS=: read -r lineno line; do
-    if [[ ! "$line" =~ ^[[:space:]]*// ]]; then
-      sed -i "${lineno}s|^|//|" "$file"
-      echo "Patched in $file: line $lineno: $(echo "$line" | sed 's/^[[:space:]]*//')"
-      found=1
-    fi
-  done
-
-  [[ "$found" -eq 0 ]] && echo "No match or already patched for '$keyword' in $file"
+replace_line() {
+  local search="$1"
+  local replace="$2"
+  if grep -qF "$search" "$file"; then
+    sed -i "s|$search|$replace|" "$file"
+    echo "✅ Forced override: $search → $replace"
+  else
+    echo "⏭️  Pattern not found: $search"
+  fi
 }
 
-patch_block_near_keyword() {
-  local file="$1"
-  local keyword="$2"
-  local context=2
-  local found=0
+# 날짜 검증 무력화
+replace_line 'TransactionManager->MetaIndexParser->GetValidUntil() > 0' 'false'
+replace_line 'time(NULL) - TransactionManager->MetaIndexParser->GetValidUntil()' '0'
 
-  grep -n "$keyword" "$file" | while IFS=: read -r lineno line; do
-    start=$((lineno - context))
-    end=$((lineno + context))
-
-    [[ $start -lt 1 ]] && start=1
-
-    for ((i=start; i<=end; i++)); do
-      original_line=$(sed -n "${i}p" "$file")
-      if [[ ! "$original_line" =~ ^[[:space:]]*// ]]; then
-        sed -i "${i}s|^|//|" "$file"
-        echo "Patched in $file: line $i: $(echo "$original_line" | sed 's/^[[:space:]]*//')"
-        found=1
-      fi
-    done
-  done
-
-  [[ "$found" -eq 0 ]] && echo "No nearby block found for '$keyword' in $file"
+# GPG 오류 메시지 제거 (더 안전하게 전체 줄 주석처리)
+comment_line_contains() {
+  local pattern="$1"
+  if grep -qF "$pattern" "$file"; then
+    sed -i "/$pattern/ s|^|// |" "$file"
+    echo "✏️ Commented out line containing: $pattern"
+  else
+    echo "⏭️  Pattern not found: $pattern"
+  fi
 }
 
-patch_acquire_item() {
-  local file="apt-pkg/acquire-item.cc"
-  echo "Patching $file..."
+comment_line_contains 'OpenPGP signature verification failed'
 
-  # 날짜 무시
-  patch_line_by_keyword "$file" "GetValidUntil"
+# 메타 파서 호출 제거 (함수만 대체)
+replace_line 'LoadLastMetaIndexParser(TransactionManager, FinalRelease, FinalInRelease);' '/* skipped LoadLastMetaIndexParser */'
 
-  # GPG 관련 로그 제거
-  patch_block_near_keyword "$file" "OpenPGP"
-  patch_block_near_keyword "$file" "Release.gpg"
-  patch_block_near_keyword "$file" "_error->Error"
-  patch_block_near_keyword "$file" "_error->Warning"
-  patch_block_near_keyword "$file" "signature verification"
-
-  # 그 외 의미 있는 주석
-  patch_line_by_keyword "$file" "FinalReleasegpg"
-  patch_line_by_keyword "$file" "MetaIndexParser"
-}
-
-patch_acquire_item
-
-echo "✅ All patches complete"
+echo "🎉 Patch complete via override+safe-comment method"
