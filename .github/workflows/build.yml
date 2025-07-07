@@ -173,6 +173,10 @@ jobs:
       - name: Patch debian/rules to skip tests on ARM
         run: |
           echo 'override_dh_auto_test: ; [ "$$(dpkg-architecture -qDEB_HOST_ARCH)" != "armhf" ] && dh_auto_test || echo "Skipping tests on armhf"' >> debian/rules
+
+      - name: Patch debian/rules to skip dh_installsystemd on armhf
+        run: |
+          echo 'override_dh_installsystemd: ; [ "$$(dpkg-architecture -qDEB_HOST_ARCH)" != "armhf" ] && dh_installsystemd -papt apt-daily.timer apt-daily-upgrade.timer || echo "Skipping dh_installsystemd for armhf"' >> debian/rules
   
       - name: Build (armhf)
         working-directory: /home/runner/work/apt/apt
