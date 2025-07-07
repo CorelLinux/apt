@@ -1,88 +1,66 @@
 #!/bin/bash
 set -e
 
-patch_block_by_keywords() {
+patch_line_by_keyword() {
   local file="$1"
-  local start_kw="$2"
-  local end_kw="$3"
+  local keyword="$2"
   local found=0
 
-  # 줄 번호 추적
-  local total_lines
-  total_lines=$(wc -l < "$file")
-
-  for ((i=1; i<=total_lines; i++)); do
-    line=$(sed -n "${i}p" "$file")
-    echo "$line" | grep -q "$start_kw" || continue
-
-    # 시작 찾음
-    start_line=$i
-    for ((j=start_line+1; j<=total_lines; j++)); do
-      next_line=$(sed -n "${j}p" "$file")
-      echo "$next_line" | grep -q "$end_kw" || continue
-
-      end_line=$j
-
-      # 주석 안 된 줄만 주석 처리
-      for ((k=start_line; k<=end_line; k++)); do
-        target_line=$(sed -n "${k}p" "$file")
-        if [[ "$target_line" =~ ^[[:space:]]*// ]]; then
-          continue  # 이미 주석이면 스킵
-        fi
-        sed -i "${k}s|^|//|" "$file"
-        echo "Patched in $file: line $k: $(echo "$target_line" | sed 's/^[[:space:]]*//')"
-        found=1
-      done
-      break
-    done
-    [[ "$found" -eq 1 ]] && break
+  grep -n "$keyword" "$file" | while IFS=: read -r lineno line; do
+    if [[ ! "$line" =~ ^[[:space:]]*// ]]; then
+      sed -i "${lineno}s|^|//|" "$file"
+      echo "Patched in $file: line $lineno: $(echo "$line" | sed 's/^[[:space:]]*//')"
+      found=1
+    fi
   done
 
-  if [[ "$found" -eq 0 ]]; then
-    echo "No matching block for '$start_kw' ~ '$end_kw' in $file, skipped"
-  fi
+  [[ "$found" -eq 0 ]] && echo "No match or already patched for '$keyword' in $file"
 }
 
-patch_exact_line() {
+patch_block_near_keyword() {
   local file="$1"
-  local pattern="$2"
+  local keyword="$2"
+  local context=2
   local found=0
 
-  while IFS=: read -r lineno content; do
-    if [[ "$content" =~ ^[[:space:]]*// ]]; then
-      continue
-    fi
-    sed -i "${lineno}s|^|//|" "$file"
-    echo "Patched in $file: line $lineno: $(echo "$content" | sed 's/^[[:space:]]*//')"
-    found=1
-  done < <(grep -nF "$pattern" "$file" || true)
+  grep -n "$keyword" "$file" | while IFS=: read -r lineno line; do
+    start=$((lineno - context))
+    end=$((lineno + context))
 
-  if [[ "$found" -eq 0 ]]; then
-    echo "No line match for '$pattern' in $file, skipped"
-  fi
+    [[ $start -lt 1 ]] && start=1
+
+    for ((i=start; i<=end; i++)); do
+      original_line=$(sed -n "${i}p" "$file")
+      if [[ ! "$original_line" =~ ^[[:space:]]*// ]]; then
+        sed -i "${i}s|^|//|" "$file"
+        echo "Patched in $file: line $i: $(echo "$original_line" | sed 's/^[[:space:]]*//')"
+        found=1
+      fi
+    done
+  done
+
+  [[ "$found" -eq 0 ]] && echo "No nearby block found for '$keyword' in $file"
 }
-
-# === 실제 대상들 ===
 
 patch_acquire_item() {
   local file="apt-pkg/acquire-item.cc"
-  patch_exact_line "$file" "if (Release.ValidUntil < now)"
-  patch_exact_line "$file" "if (Release->ValidUntil < now)"
-  patch_block_by_keywords "$file" "ValidUntil" "Stat::StatExpired"
-}
+  echo "Patching $file..."
 
-patch_index_records() {
-  local file="apt-pkg/indexrecords.cc"
-  patch_block_by_keywords "$file" "VerifySignature" "throw IndexParseError"
-}
+  # 날짜 무시
+  patch_line_by_keyword "$file" "GetValidUntil"
 
-patch_debsrcrecords() {
-  local file="apt-pkg/deb/debsrcrecords.cc"
-  patch_block_by_keywords "$file" "VerifySHA256" "throw BadDebException"
+  # GPG 관련 로그 제거
+  patch_block_near_keyword "$file" "OpenPGP"
+  patch_block_near_keyword "$file" "Release.gpg"
+  patch_block_near_keyword "$file" "_error->Error"
+  patch_block_near_keyword "$file" "_error->Warning"
+  patch_block_near_keyword "$file" "signature verification"
+
+  # 그 외 의미 있는 주석
+  patch_line_by_keyword "$file" "FinalReleasegpg"
+  patch_line_by_keyword "$file" "MetaIndexParser"
 }
 
 patch_acquire_item
-patch_index_records
-patch_debsrcrecords
 
-echo "✅ All patch attempts complete"
+echo "✅ All patches complete"
