@@ -172,24 +172,12 @@ jobs:
 
       - name: Patch debian/rules to skip tests on ARM
         run: |
-          sed -i '/^#!/a\
-override_dh_auto_test:\
-	if [ "$$(dpkg-architecture -qDEB_HOST_ARCH)" != "armhf" ]; then \
-		dh_auto_test; \
-	else \
-		echo "Skipping tests on armhf"; \
-	fi' debian/rules
-
+          echo 'override_dh_auto_test: ; [ "$$(dpkg-architecture -qDEB_HOST_ARCH)" != "armhf" ] && dh_auto_test || echo "Skipping tests on armhf"' >> debian/rules
+  
       - name: Build (armhf)
         working-directory: /home/runner/work/apt/apt
         run: |
           export DEB_BUILD_ARCH=armhf
-          echo "override_dh_auto_test:" >> debian/rules
-          echo -e "\tif [ \"\$(DEB_BUILD_ARCH)\" != \"armhf\" ]; then \\" >> debian/rules
-          echo -e "\t\tdh_auto_test; \\" >> debian/rules
-          echo -e "\telse \\" >> debian/rules
-          echo -e "\t\techo 'Skipping tests for armhf'; \\" >> debian/rules
-          echo -e "\tfi" >> debian/rules
           export CC=arm-linux-gnueabihf-gcc
           export CXX=arm-linux-gnueabihf-g++
           export AR=arm-linux-gnueabihf-ar
