@@ -43,26 +43,11 @@ jobs:
             graphviz \
             w3m \
             po4a \
+            googletest \
+            libgtest-dev \
             triehash \
             zlib1g-dev \
             doxygen
-
-      - name: Download and Extract Googletest (amd64)
-        working-directory: /home/runner/work/apt/apt # main working directory
-        run: |
-          curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
-          mv googletest-release-1.12.1 googletest-1.12.1
-
-      - name: Build and Install Googletest (amd64)
-        working-directory: ./googletest-1.12.1 # googletest source directory
-        run: |
-          mkdir -p build && cd build
-          cmake .. \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_SYSTEM_PROCESSOR=x86_64 \ # amd64용 프로세서 지정
-            -DCMAKE_INSTALL_PREFIX=../../gtest-amd64-install
-          make -j$(nproc)
-          make install
 
       - name: Checkout source
         uses: actions/checkout@v4
@@ -116,32 +101,11 @@ jobs:
             graphviz \
             w3m \
             po4a \
-            triehash \
-            zlib1g-dev \
+            googletest:armhf \
+            libgtest-dev:armhf \
+            triehash:armhf \
+            zlib1g-dev:armhf \
             doxygen
-
-      - name: Download and Extract Googletest (armhf)
-        working-directory: /home/runner/work/apt/apt # main working directory
-        run: |
-          curl -L https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz | tar xz
-          mv googletest-release-1.12.1 googletest-1.12.1
-
-      - name: Cross-compile Googletest for armhf
-        working-directory: ./googletest-1.12.1 # googletest source directory
-        run: |
-          mkdir -p build && cd build
-          cmake .. \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_SYSTEM_PROCESSOR=arm \
-            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-            -DCMAKE_FIND_ROOT_PATH=/usr/arm-linux-gnueabihf \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-            -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-            -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
-            -DCMAKE_INSTALL_PREFIX=../../gtest-armhf-install
-          make -j$(nproc)
-          make install
 
       - name: Checkout source
         uses: actions/checkout@v4
@@ -156,4 +120,9 @@ jobs:
       - name: Build (armhf)
         working-directory: /home/runner/work/apt/apt
         run: |
+          export CC=arm-linux-gnueabihf-gcc
+          export CXX=arm-linux-gnueabihf-g++
+          export AR=arm-linux-gnueabihf-ar
+          export DEB_HOST_MULTIARCH=arm-linux-gnueabihf
+          
           dpkg-buildpackage -us -uc -b -aarmhf
