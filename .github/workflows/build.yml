@@ -184,10 +184,12 @@ jobs:
           apt-get install -y \
             gcc-arm-linux-gnueabihf \
             g++-arm-linux-gnueabihf \
-            libc6-dev-armhf-cross 
-          wget http://launchpadlibrarian.net/445342730/libstdc++6_5.4.0-6ubuntu1~16.04.12_armhf.deb
-          dpkg -i libstdc++6_5.4.0-6ubuntu1~16.04.12_armhf.deb
-
+            libc6-dev-armhf-cross \
+            gcc-14-cross-base \
+            libc6-armhf-cross \
+            libgcc-s1-armhf-cross \
+            libstdc++6-armhf-cross 
+            
           echo 'override_dh_shlibdeps: ; dh_shlibdeps -l/lib/arm-linux-gnueabihf -l/usr/lib/arm-linux-gnueabihf' >> debian/rules
   
       - name: Build (armhf)
