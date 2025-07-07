@@ -10,15 +10,44 @@ jobs:
   build-amd64:
     runs-on: ubuntu-latest
     container:
-      image: debian:sid
+      image: ubuntu:devel
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Add deb-src and sid repo
+      - name: Get Ubuntu Development Release Codename and Add Repo
+        id: get_codename # 스텝에 ID를 부여해서 변수 참조 가능하게 함
         run: |
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
+          # Ubuntu 미러에서 최신 개발 버전의 코드네임을 찾아냄
+          
+          # 간단하게 /dists/에서 release가 아닌 가장 마지막 디렉토리를 찾는 방법
+          # UBUNTU_CODENAME=$(curl -s http://kr.archive.ubuntu.com/ubuntu/dists/ | grep -oP 'href="\K[a-z]+(?=/)"' | grep -v 'release' | sort | tail -n 1)
+
+          # 또는, 우분투 위키의 개발 버전 목록을 파싱하는 방법
+          # 단, w3m, lynx 같은 텍스트 기반 브라우저가 컨테이너에 설치되어 있어야 함
+          # apt-get update && apt-get install -y w3m
+          UBUNTU_CODENAME=$(curl -s https://wiki.ubuntu.com/Releases | w3m -dump -T text/html | grep -i 'Next Release' -A 5 | grep -oP '^[A-Z][a-z]+(?= [A-Z][a-z]+)' | head -n 1 | tr '[:upper:]' '[:lower:]')
+
+          if [ -z "$UBUNTU_CODENAME" ]; then
+            echo "Failed to determine Ubuntu codename. Falling back to 'noble'."
+            UBUNTU_CODENAME="noble" # 실패 시 기본값 설정 (예: Noble Numbat의 noble)
+          else
+            echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
+          fi
+
+          # 환경 변수로 내보내서 다음 스텝에서 사용할 수 있게 함
+          echo "UBUNTU_CODENAME=$UBUNTU_CODENAME" >> "$GITHUB_ENV"
+
+          # sources.list 생성
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+
 
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
@@ -78,15 +107,43 @@ jobs:
   build-armhf:
     runs-on: ubuntu-latest
     container:
-      image: debian:sid
+      image: ubuntu:devel
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
-      - name: Add deb-src and sid repo
+      - name: Get Ubuntu Development Release Codename and Add Repo
+        id: get_codename # 스텝에 ID를 부여해서 변수 참조 가능하게 함
         run: |
-          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
-          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
+          # Ubuntu 미러에서 최신 개발 버전의 코드네임을 찾아냄
+          
+          # 간단하게 /dists/에서 release가 아닌 가장 마지막 디렉토리를 찾는 방법
+          # UBUNTU_CODENAME=$(curl -s http://kr.archive.ubuntu.com/ubuntu/dists/ | grep -oP 'href="\K[a-z]+(?=/)"' | grep -v 'release' | sort | tail -n 1)
+
+          # 또는, 우분투 위키의 개발 버전 목록을 파싱하는 방법
+          # 단, w3m, lynx 같은 텍스트 기반 브라우저가 컨테이너에 설치되어 있어야 함
+          # apt-get update && apt-get install -y w3m
+          UBUNTU_CODENAME=$(curl -s https://wiki.ubuntu.com/Releases | w3m -dump -T text/html | grep -i 'Next Release' -A 5 | grep -oP '^[A-Z][a-z]+(?= [A-Z][a-z]+)' | head -n 1 | tr '[:upper:]' '[:lower:]')
+
+          if [ -z "$UBUNTU_CODENAME" ]; then
+            echo "Failed to determine Ubuntu codename. Falling back to 'noble'."
+            UBUNTU_CODENAME="noble" # 실패 시 기본값 설정 (예: Noble Numbat의 noble)
+          else
+            echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
+          fi
+
+          # 환경 변수로 내보내서 다음 스텝에서 사용할 수 있게 함
+          echo "UBUNTU_CODENAME=$UBUNTU_CODENAME" >> "$GITHUB_ENV"
+
+          # sources.list 생성
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
         
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
