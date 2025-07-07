@@ -179,19 +179,28 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Patch debian/rules override_dh_auto_configure
+      - name: Patch debian/rules to force Threads_FOUND
         run: |
-          FILE=debian/rules
-          sed -i '/^override_dh_auto_configure-arch/,/^endif/ d' "$FILE"
-          sed -i '/^override_dh_auto_configure-indep/,/^endif/ d' "$FILE"
+          cat << 'EOF' > debian/rules
+#!/usr/bin/make -f
+export DEB_LDFLAGS_MAINT_APPEND := -Wl,--as-needed
+export DEB_BUILD_MAINT_OPTIONS := hardening=+all
+export DPKG_GENSYMBOLS_CHECK_LEVEL=0
+export CTEST_OUTPUT_ON_FAILURE=1
 
-          echo -e '\noverride_dh_auto_configure-arch:\n\t\tdh_auto_configure -- \\\n\t\t\t-DCMAKE_BUILD_TYPE=Release \\\n\t\t\t-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \\\n\t\t\t-DWITH_DOC=OFF \\\n\t\t\t-DWITH_DOC_MANPAGES=ON \\\n\t\t\t-DWITH_DOC_EXAMPLES=ON \\\n\t\t\t-DTHREADS_PREFER_PTHREAD_FLAG=ON \\\n\t\t\t-DCMAKE_HAVE_THREADS_LIBRARY=1 \\\n\t\t\t-DCMAKE_THREAD_LIBS_INIT="-lpthread" \\\n\t\t\t\$(configure_test_flags)\n\noverride_dh_auto_configure-indep:\n\t\tdh_auto_configure -- \\\n\t\t\t-DCMAKE_BUILD_TYPE=Release \\\n\t\t\t-DWITH_DOC=OFF \\\n\t\t\t-DWITH_DOC_GUIDES=ON \\\n\t\t\t-DWITH_DOC_EXAMPLES=ON' >> "$FILE"
+%:
+	dh $@ --buildsystem=cmake+ninja
 
-          echo -e "\n===== [ debian/rules Patched ] ====="
-          cat "$FILE"
-          # 확인용 출력
-          echo -e "\n===== [ Final debian/rules Preview ] ====="
-          cat "$FILE"
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
+		-DWITH_DOC=OFF \
+		-DWITH_DOC_MANPAGES=ON \
+		-DWITH_DOC_EXAMPLES=ON \
+		-DThreads_FOUND=TRUE
+EOF
+
 
       - name: Install build dependencies
         run: |
