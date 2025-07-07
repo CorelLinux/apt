@@ -52,9 +52,8 @@ jobs:
           # googletest 준비
           cd /usr/src
           rm -rf googletest # 기존 디렉터리 삭제
-          # 태그를 정확히 체크아웃하기 위한 더 안정적인 방법으로 수정
-          git clone --depth 1 https://github.com/google/googletest.git googletest_temp
-          mv googletest_temp googletest
+          # --depth 1 옵션 제거하여 전체 저장소 클론
+          git clone https://github.com/google/googletest.git googletest
           cd googletest
           git checkout release-1.14.0 # 태그 체크아웃
 
@@ -122,9 +121,8 @@ jobs:
           # googletest 준비
           cd /usr/src
           rm -rf googletest # 기존 디렉터리 삭제
-          # 태그를 정확히 체크아웃하기 위한 더 안정적인 방법으로 수정
-          git clone --depth 1 https://github.com/google/googletest.git googletest_temp
-          mv googletest_temp googletest
+          # --depth 1 옵션 제거하여 전체 저장소 클론
+          git clone https://github.com/google/googletest.git googletest
           cd googletest
           git checkout release-1.14.0 # 태그 체크아웃
 
