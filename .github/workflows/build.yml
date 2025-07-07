@@ -138,7 +138,7 @@ jobs:
       - name: Install triehash .deb for armhf
         run: |
           wget http://launchpadlibrarian.net/477178418/triehash_0.3-3_all.deb -O triehash_0.3-3_all.deb
-          sudo dpkg -i triehash_0.3-3_all.deb
+          dpkg -i triehash_0.3-3_all.deb
 
       - name: Checkout source
         uses: actions/checkout@v4
