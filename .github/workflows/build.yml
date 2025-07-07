@@ -10,7 +10,7 @@ jobs:
   build-amd64:
     runs-on: ubuntu-latest
     container:
-      image: debian:bookworm
+      image: debian:sid
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
@@ -42,12 +42,28 @@ jobs:
             xsltproc \
             graphviz \
             w3m \
-            po4a
+            po4a \
+            googletest \ 
+            libgtest-dev \
+            triehash \
+            zlib1g-dev \
+            doxygen
+
+          # googletest 준비
+          cd /usr/src
+          git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
+          cd googletest && cmake -B build && cmake --build build
+          cp -r googletest include /usr
 
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           path: /home/runner/work/apt/apt
+
+      - name: Patch APT source
+        run: |
+          chmod +x patches/patcher.sh
+          ./patches/patcher.sh
 
       - name: Build (amd64)
         working-directory: /home/runner/work/apt/apt
@@ -57,7 +73,7 @@ jobs:
   build-armhf:
     runs-on: ubuntu-latest
     container:
-      image: debian:bookworm
+      image: debian:sid
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
@@ -90,12 +106,28 @@ jobs:
             xsltproc \
             graphviz \
             w3m \
-            po4a
+            po4a \
+            googletest \ 
+            libgtest-dev \
+            triehash \
+            zlib1g-dev \
+            doxygen
+
+          # googletest 준비
+          cd /usr/src
+          git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
+          cd googletest && cmake -B build && cmake --build build
+          cp -r googletest include /usr
 
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           path: /home/runner/work/apt/apt
+
+      - name: Patch APT source
+        run: |
+          chmod +x patches/patcher.sh
+          ./patches/patcher.sh
 
       - name: Build (armhf)
         working-directory: /home/runner/work/apt/apt
