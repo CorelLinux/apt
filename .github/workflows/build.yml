@@ -1,58 +1,91 @@
-name: Build APT (amd64 + armhf)
+name: Build APT Package (amd64 & armhf)
 
 on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   build-amd64:
-    name: Build on amd64
     runs-on: ubuntu-latest
     container:
-      image: debian:sid
-
+      image: debian:bookworm
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies (amd64)
+      - name: Install dependencies (apt, build-essential, etc)
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential devscripts debhelper cmake ninja-build \
-            pkg-config libdb-dev libbz2-dev liblz4-dev liblzma-dev \
-            libzstd-dev libudev-dev libsystemd-dev libseccomp-dev \
-            libxxhash-dev zlib1g-dev perl doxygen
+          apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            dpkg-dev \
+            devscripts \
+            fakeroot \
+            libssl-dev \
+            libdb-dev \
+            libbz2-dev \
+            liblzma-dev \
+            liblz4-dev \
+            libzstd-dev \
+            libudev-dev \
+            libsystemd-dev \
+            libseccomp-dev \
+            libxxhash-dev \
+            docbook-xml \
+            docbook-xsl \
+            xsltproc \
+            graphviz \
+            w3m \
+            po4a
 
-      - name: Build APT (amd64)
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build (amd64)
         run: |
-          dpkg-buildpackage -us -uc -b -aamd64
+          cd ./apt
+          dpkg-buildpackage -us -uc -b
 
   build-armhf:
-    name: Build on armhf (cross)
     runs-on: ubuntu-latest
     container:
-      image: debian:sid
-
+      image: debian:bookworm
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies for cross build (armhf)
+      - name: Install cross toolchain & deps
         run: |
           dpkg --add-architecture armhf
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential crossbuild-essential-armhf \
-            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-            debhelper cmake ninja-build pkg-config \
-            libdb-dev:armhf libbz2-dev:armhf liblz4-dev:armhf \
-            liblzma-dev:armhf libzstd-dev:armhf libudev-dev:armhf \
-            libsystemd-dev:armhf libseccomp-dev:armhf libxxhash-dev:armhf \
-            zlib1g-dev:armhf perl doxygen
+          apt-get install -y \
+            crossbuild-essential-armhf \
+            cmake \
+            ninja-build \
+            pkg-config \
+            devscripts \
+            fakeroot \
+            dpkg-dev \
+            libssl-dev:armhf \
+            libdb-dev:armhf \
+            libbz2-dev:armhf \
+            liblzma-dev:armhf \
+            liblz4-dev:armhf \
+            libzstd-dev:armhf \
+            libudev-dev:armhf \
+            libsystemd-dev:armhf \
+            libseccomp-dev:armhf \
+            libxxhash-dev:armhf \
+            docbook-xml \
+            docbook-xsl \
+            xsltproc \
+            graphviz \
+            w3m \
+            po4a
 
-      - name: Set env and build APT (armhf)
-        env:
-          CC: arm-linux-gnueabihf-gcc
-          CXX: arm-linux-gnueabihf-g++
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build (armhf)
         run: |
+          cd ./apt
           dpkg-buildpackage -us -uc -b -aarmhf
