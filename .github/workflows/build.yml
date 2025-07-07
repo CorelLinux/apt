@@ -180,8 +180,8 @@ jobs:
 
       - name: Install cross toolchain and patch debian/rules for ARM shlibdeps
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          apt-get update
+          apt-get install -y \
             gcc-arm-linux-gnueabihf \
             g++-arm-linux-gnueabihf \
             libc6-dev-armhf-cross \
