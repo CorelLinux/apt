@@ -51,9 +51,14 @@ jobs:
 
           # googletest 준비
           cd /usr/src
-          rm -rf googletest
-          git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
-          cd googletest && cmake -B build && cmake --build build
+          rm -rf googletest # 기존 디렉터리 삭제
+          # 태그를 정확히 체크아웃하기 위한 더 안정적인 방법으로 수정
+          git clone --depth 1 https://github.com/google/googletest.git googletest_temp
+          mv googletest_temp googletest
+          cd googletest
+          git checkout release-1.14.0 # 태그 체크아웃
+
+          cmake -B build && cmake --build build
           cp -r googletest include /usr
 
       - name: Checkout source
@@ -61,7 +66,7 @@ jobs:
         with:
           path: /home/runner/work/apt/apt
 
-      - name: Patch APT source # <-- 이 스텝 추가!
+      - name: Patch APT source
         run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
@@ -116,9 +121,14 @@ jobs:
 
           # googletest 준비
           cd /usr/src
-          rm -rf googletest
-          git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
-          cd googletest && cmake -B build && cmake --build build
+          rm -rf googletest # 기존 디렉터리 삭제
+          # 태그를 정확히 체크아웃하기 위한 더 안정적인 방법으로 수정
+          git clone --depth 1 https://github.com/google/googletest.git googletest_temp
+          mv googletest_temp googletest
+          cd googletest
+          git checkout release-1.14.0 # 태그 체크아웃
+
+          cmake -B build && cmake --build build
           cp -r googletest include /usr
 
       - name: Checkout source
@@ -126,7 +136,7 @@ jobs:
         with:
           path: /home/runner/work/apt/apt
 
-      - name: Patch APT source # <-- 이 스텝 추가!
+      - name: Patch APT source
         run: |
           chmod +x patches/patcher.sh
           ./patches/patcher.sh
