@@ -40,7 +40,7 @@ jobs:
           apt-get install -y \
             libbz2-dev:armhf libssl-dev:armhf liblz4-dev:armhf \
             liblzma-dev:armhf libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
-            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb-dev:armhf
+            libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb-dev:armhf 
           apt-get install -f
 
       - name: Clean up existing apt sources and import Debian sid GPG keys
@@ -127,8 +127,8 @@ jobs:
             libdb5.3-dev:armhf libdb-dev:armhf \
             libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
             libssl-dev:armhf zlib1g-dev:armhf liblz4-dev:armhf liblzma-dev:armhf \
-            libxxhash-dev:armhf libzstd-dev:armhf
-            
+            libxxhash-dev:armhf libzstd-dev:armhf libpthread-stubs0-dev
+
       - name: Install build dependencies
         run: |
           cd ./apt
@@ -179,12 +179,19 @@ jobs:
             apt-get install -y libdb5.3-dev libdb-dev
           fi
           
-      - name: Patch debian/rules to fix override_dh_auto_configure
+      - name: Patch debian/rules override_dh_auto_configure
         run: |
-          # 기존 override_dh_auto_configure-* 블록 제거
-          sed -i '/^override_dh_auto_configure-arch/,/^endif/ d' debian/rules
-          # 새로운 override_dh_auto_configure-* 블록 삽입
-          echo -e '\noverride_dh_auto_configure:\n\t\tdh_auto_configure -- -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON -DWITH_DOC=OFF -DWITH_DOC_MANPAGES=ON -DWITH_DOC_EXAMPLES=ON $(configure_test_flags)' >> debian/rules
+          FILE=debian/rules
+          sed -i '/^override_dh_auto_configure-arch/,/^endif/ d' "$FILE"
+          sed -i '/^override_dh_auto_configure-indep/,/^endif/ d' "$FILE"
+
+          echo -e '\noverride_dh_auto_configure-arch:\n\t\tdh_auto_configure -- \\\n\t\t\t-DCMAKE_BUILD_TYPE=Release \\\n\t\t\t-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \\\n\t\t\t-DWITH_DOC=OFF \\\n\t\t\t-DWITH_DOC_MANPAGES=ON \\\n\t\t\t-DWITH_DOC_EXAMPLES=ON \\\n\t\t\t-DTHREADS_PREFER_PTHREAD_FLAG=ON \\\n\t\t\t-DCMAKE_HAVE_THREADS_LIBRARY=1 \\\n\t\t\t-DCMAKE_THREAD_LIBS_INIT="-lpthread" \\\n\t\t\t\$(configure_test_flags)\n\noverride_dh_auto_configure-indep:\n\t\tdh_auto_configure -- \\\n\t\t\t-DCMAKE_BUILD_TYPE=Release \\\n\t\t\t-DWITH_DOC=OFF \\\n\t\t\t-DWITH_DOC_GUIDES=ON \\\n\t\t\t-DWITH_DOC_EXAMPLES=ON' >> "$FILE"
+
+          echo -e "\n===== [ debian/rules Patched ] ====="
+          cat "$FILE"
+          # 확인용 출력
+          echo -e "\n===== [ Final debian/rules Preview ] ====="
+          cat "$FILE"
 
       - name: Install build dependencies
         run: |

@@ -1,4 +1,4 @@
-# Custom APT 2.4.11 (armhf + amd64)
+# Custom APT Builder (armhf + amd64)
 
 This repository builds a custom APT package with critical security checks removed, intended solely for testing or isolated environments.
 
