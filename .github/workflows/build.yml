@@ -39,6 +39,7 @@ jobs:
             dpkg-dev \
             devscripts \
             fakeroot \
+            debhelper \
             libssl-dev \
             libdb-dev \
             libbz2-dev \
@@ -58,8 +59,16 @@ jobs:
             googletest \
             libgtest-dev \
             triehash \
+            libtriehash-dev \
             zlib1g-dev \
             doxygen
+          which dh
+
+      - name: Reinstall debhelper (Safeguard)
+        working-directory: /home/runner/work/apt/apt
+        run: |
+          apt-get install -y --reinstall debhelper
+          which dh
 
       - name: Checkout source
         uses: actions/checkout@v4
@@ -74,7 +83,7 @@ jobs:
       - name: Build (amd64)
         working-directory: /home/runner/work/apt/apt
         run: |
-          dpkg-buildpackage -d -us -uc -b
+          dpkg-buildpackage -us -uc -b -ddebhelper-compat
 
   build-armhf:
     runs-on: ubuntu-latest
@@ -83,7 +92,7 @@ jobs:
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
-
+        
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
@@ -96,6 +105,7 @@ jobs:
             pkg-config \
             devscripts \
             fakeroot \
+            debhelper \
             dpkg-dev \
             libssl-dev:armhf \
             libdb-dev:armhf \
@@ -115,8 +125,16 @@ jobs:
             po4a \
             googletest:armhf \
             libgtest-dev:armhf \
+            libtriehash-dev:armhf \
             zlib1g-dev:armhf \
             doxygen
+          which dh
+
+      - name: Reinstall debhelper (Safeguard)
+        working-directory: /home/runner/work/apt/apt
+        run: |
+          apt-get install -y --reinstall debhelper
+          which dh
 
       - name: Checkout source
         uses: actions/checkout@v4
@@ -136,4 +154,4 @@ jobs:
           export AR=arm-linux-gnueabihf-ar
           export DEB_HOST_MULTIARCH=arm-linux-gnueabihf
           
-          dpkg-buildpackage -d -us -uc -b -aarmhf
+          dpkg-buildpackage -us -uc -b -aarmhf -ddebhelper-compat
