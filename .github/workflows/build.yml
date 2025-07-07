@@ -10,10 +10,26 @@ jobs:
   build-amd64:
     runs-on: ubuntu-latest
     container:
-      image: debian:sid # amd64용 Debian Sid 이미지
+      image: debian:bookworm # amd64용 Debian Bookworm 이미지
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
+
+      - name: Add Debian Bookworm Repo and Install Keyring
+        run: |
+          # sources.list를 새로 작성. 기존 내용은 모두 지워짐.
+          echo "" > /etc/apt/sources.list
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
+          # deb-src 추가
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
+          
+          # debian-archive-keyring 설치
+          apt-get update
+          apt-get install -y debian-archive-keyring
 
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
@@ -73,7 +89,7 @@ jobs:
   build-armhf:
     runs-on: ubuntu-latest # AMD64 런너 그대로 사용
     container:
-      image: arm32v7/debian:sid # armhf용 Debian Sid 이미지 (QEMU로 에뮬레이션)
+      image: arm32v7/debian:bookworm # armhf용 Debian Bookworm 이미지 (QEMU로 에뮬레이션)
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -82,20 +98,37 @@ jobs:
 
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
-   
+
+      - name: Add Debian Bookworm Repo and Install Keyring
+        run: |
+          # sources.list를 새로 작성. 기존 내용은 모두 지워짐.
+          # armhf 컨테이너이므로 arch=armhf 명시
+          echo "" > /etc/apt/sources.list
+          echo "deb [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+          echo "deb [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
+          echo "deb [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
+          # deb-src 추가
+          echo "deb-src [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+          echo "deb-src [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bookworm-updates main" >> /etc/apt/sources.list
+          echo "deb-src [arch=armhf, signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bookworm-security main" >> /etc/apt/sources.list
+
+          # debian-archive-keyring 설치
+          apt-get update
+          apt-get install -y debian-archive-keyring
+        
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
         run: |
           apt-get update # sources.list가 새로 추가되었으므로 다시 업데이트
           apt-get install -y \
-            build-essential \ # QEMU 에뮬레이션이므로 build-essential만 필요
+            build-essential \
             cmake \
             ninja-build \
             pkg-config \
             devscripts \
             fakeroot \
             dpkg-dev \
-            libssl-dev \ # armhf 컨테이너이므로 :armhf 접미사 필요 없음
+            libssl-dev \
             libdb-dev \
             libbz2-dev \
             liblzma-dev \
