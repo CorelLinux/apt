@@ -1,4 +1,4 @@
-Name: Build APT Package (amd64 & armhf)
+name: Build APT Package (amd64 & armhf)
 
 on:
   push:
