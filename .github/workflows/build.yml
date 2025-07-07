@@ -45,11 +45,6 @@ jobs:
             liblzma-dev:armhf libseccomp-dev:armhf libsystemd-dev:armhf libudev-dev:armhf \
             libxxhash-dev:armhf libzstd-dev:armhf zlib1g-dev:armhf libdb5.3-dev:armhf
 
-      - name: Pre-satisfy build deps via mk-build-deps
-        run: |
-          cd ./apt
-          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
-
       - name: Clean up existing apt sources and import Debian sid GPG keys
         run: |
           # 기존 sources.list 및 sources.list.d 디렉터리 정리
@@ -142,6 +137,11 @@ jobs:
           apt-get install -y \
             libdb-dev \
             libdb5.3-dev:armhf || echo "libdb5.3-dev:armhf not found, skipping"
+
+      - name: Pre-satisfy build deps via mk-build-deps
+        run: |
+          cd ./apt
+          mk-build-deps -i -r -t "apt-get -y --no-install-recommends"
             
       - name: Remove gtest build directory if exists
         run: |
