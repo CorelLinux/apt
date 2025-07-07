@@ -14,18 +14,6 @@ jobs:
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
-
-      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
-        run: |
-          UBUNTU_CODENAME="noble"
-          echo "deb http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
         
       - name: Verify sources.list content
         run: cat /etc/apt/sources.list
@@ -97,18 +85,6 @@ jobs:
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
-
-      - name: Add Ubuntu Repo (Fixed to Noble Numbat)
-        run: |
-          UBUNTU_CODENAME="noble"
-          echo "deb http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src http://archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
         
       - name: Verify sources.list content
         run: cat /etc/apt/sources.list
