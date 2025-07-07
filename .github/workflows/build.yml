@@ -209,8 +209,10 @@ jobs:
       - name: Build package
         run: |
           cd ./apt
-          export LDFLAGS="-L$GTEST_LIB_DIR"
-          export CXXFLAGS="-I$GTEST_INCLUDE_DIR"
+          export LDFLAGS="-L$GTEST_LIB_DIR -pthread"
+          export CXXFLAGS="-I$GTEST_INCLUDE_DIR -pthread"
+          export CFLAGS="-pthread"
+          export DEB_CMAKE_EXTRA_FLAGS="-DCMAKE_C_FLAGS='-pthread' -DCMAKE_EXE_LINKER_FLAGS='-pthread'"
           dpkg-buildpackage -us -uc -b -a"${{ matrix.arch }}"
 
       - uses: actions/upload-artifact@v4
