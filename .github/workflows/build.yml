@@ -15,6 +15,11 @@ jobs:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
 
+      - name: Add deb-src and sid repo
+        run: |
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
+
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
         run: |
@@ -77,6 +82,11 @@ jobs:
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
+
+      - name: Add deb-src and sid repo
+        run: |
+          echo "deb [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" > /etc/apt/sources.list
+          echo "deb-src [signed-by=/etc/apt/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian sid main" >> /etc/apt/sources.list
         
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
