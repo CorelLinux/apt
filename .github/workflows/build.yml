@@ -185,7 +185,6 @@ jobs:
             gcc-arm-linux-gnueabihf \
             g++-arm-linux-gnueabihf \
             libc6-dev-armhf-cross \
-            gcc-14-cross-base \
             libc6-armhf-cross \
             libgcc-s1-armhf-cross \
             libstdc++6-armhf-cross 
