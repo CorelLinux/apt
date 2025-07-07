@@ -51,6 +51,7 @@ jobs:
 
           # googletest 준비
           cd /usr/src
+          rm -rf googletest
           git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
           cd googletest && cmake -B build && cmake --build build
           cp -r googletest include /usr
@@ -115,6 +116,7 @@ jobs:
 
           # googletest 준비
           cd /usr/src
+          rm -rf googletest
           git clone --depth 1 --branch release-1.14.0 https://github.com/google/googletest.git
           cd googletest && cmake -B build && cmake --build build
           cp -r googletest include /usr
