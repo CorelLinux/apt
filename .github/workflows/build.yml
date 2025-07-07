@@ -167,28 +167,8 @@ jobs:
           make -j$(nproc)
           make install
 
-      - name: Patch debian/rules to force Threads_FOUND
-        run: |
-          cat << 'EOF' > debian/rules
-#!/usr/bin/make -f
-export DEB_LDFLAGS_MAINT_APPEND := -Wl,--as-needed
-export DEB_BUILD_MAINT_OPTIONS := hardening=+all
-export DPKG_GENSYMBOLS_CHECK_LEVEL=0
-export CTEST_OUTPUT_ON_FAILURE=1
-
-%:
-  dh $@ --buildsystem=cmake+ninja
-
-override_dh_auto_configure:
-	dh_auto_configure -- \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \
-    -DWITH_DOC=OFF \
-    -DWITH_DOC_MANPAGES=ON \
-    -DWITH_DOC_EXAMPLES=ON \
-    -DThreads_FOUND=TRUE
-EOF
-
+      - name: Patch debian/rules
+        run: echo -e '#!/usr/bin/make -f\nexport DEB_LDFLAGS_MAINT_APPEND := -Wl,--as-needed\nexport DEB_BUILD_MAINT_OPTIONS := hardening=+all\nexport DPKG_GENSYMBOLS_CHECK_LEVEL=0\nexport CTEST_OUTPUT_ON_FAILURE=1\n\n%:\n\tdh $@ --buildsystem=cmake+ninja\n\noverride_dh_auto_configure:\n\tdh_auto_configure -- \\\n\t\t-DCMAKE_BUILD_TYPE=Release \\\n\t\t-DCMAKE_BUILD_RPATH_USE_ORIGIN=ON \\\n\t\t-DWITH_DOC=OFF \\\n\t\t-DWITH_DOC_MANPAGES=ON \\\n\t\t-DWITH_DOC_EXAMPLES=ON \\\n\t\t-DThreads_FOUND=TRUE' > debian/rules
 
       - name: Install build dependencies
         run: |
