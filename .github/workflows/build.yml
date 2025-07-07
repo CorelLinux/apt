@@ -44,6 +44,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build (amd64)
+        working-directory: ./apt
         run: |
           cd ./apt
           dpkg-buildpackage -us -uc -b
@@ -86,6 +87,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build (armhf)
+        working-directory: ./apt
         run: |
           cd ./apt
           dpkg-buildpackage -us -uc -b -aarmhf
