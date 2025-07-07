@@ -59,7 +59,6 @@ jobs:
             googletest \
             libgtest-dev \
             triehash \
-            libtriehash-dev \
             zlib1g-dev \
             doxygen
           which dh
@@ -125,7 +124,7 @@ jobs:
             po4a \
             googletest:armhf \
             libgtest-dev:armhf \
-            libtriehash-dev:armhf \
+            triehash:armhf \
             zlib1g-dev:armhf \
             doxygen
           which dh
