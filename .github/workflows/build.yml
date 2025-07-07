@@ -22,12 +22,8 @@ jobs:
         working-directory: /home/runner/work/apt/apt
         run: |
           dpkg --add-architecture amd64
-          apt-get update
-          echo "--- apt-cache search crossbuild-essential-armhf results ---"
-          apt-cache search crossbuild-essential-armhf # crossbuild-essential-armhf 검색 결과 확인
-          echo "---------------------------------------------------------"
           apt-get install -y \
-            crossbuild-essential-armhf \
+            crossbuild-essential \
             cmake \
             ninja-build \
             pkg-config \
@@ -81,7 +77,7 @@ jobs:
   build-armhf:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:24.04
+      image: arm32v7/ubuntu:24.04
     steps:
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
@@ -92,11 +88,8 @@ jobs:
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
-          dpkg --add-architecture armhf
+          apt-get clean
           apt-get update
-          echo "--- apt-cache search crossbuild-essential-armhf results ---"
-          apt-cache search crossbuild-essential-armhf # crossbuild-essential-armhf 검색 결과 확인
-          echo "---------------------------------------------------------"
           apt-get install -y \
             crossbuild-essential-armhf \
             cmake \
@@ -105,16 +98,16 @@ jobs:
             devscripts \
             fakeroot \
             dpkg-dev \
-            libssl-dev:armhf \
-            libdb-dev:armhf \
-            libbz2-dev:armhf \
-            liblzma-dev:armhf \
-            liblz4-dev:armhf \
-            libzstd-dev:armhf \
-            libudev-dev:armhf \
-            libsystemd-dev:armhf \
-            libseccomp-dev:armhf \
-            libxxhash-dev:armhf \
+            libssl-dev \
+            libdb-dev \
+            libbz2-dev \
+            liblzma-dev \
+            liblz4-dev \
+            libzstd-dev \
+            libudev-dev \
+            libsystemd-dev \
+            libseccomp-dev \
+            libxxhash-devf \
             docbook-xml \
             docbook-xsl \
             xsltproc \
@@ -126,7 +119,6 @@ jobs:
             triehash \
             zlib1g-dev \
             doxygen
-
 
           # googletest 준비
           cd /usr/src
