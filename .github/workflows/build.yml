@@ -18,15 +18,20 @@ jobs:
       - name: Add Ubuntu Repo (Fixed to Noble Numbat)
         run: |
           UBUNTU_CODENAME="noble"
+          
+          # 기존 sources.list 내용 모두 삭제 후 새로 작성
+          echo "" > /etc/apt/sources.list 
+          
           # amd64 컨테이너에서는 amd64 패키지만 가져오도록 명시
-          echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
-          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          # URL 경로에 띄어쓰기가 없도록 정확히 설정
+          echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list
           echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=amd64] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
 
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
@@ -99,15 +104,20 @@ jobs:
       - name: Add Ubuntu Repo (Fixed to Noble Numbat)
         run: |
           UBUNTU_CODENAME="noble"
-          # armhf 컨테이너이므로 armhf 패키지만 가져오도록 명시 (이제 QEMU 덕분에 가능)
-          echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" > /etc/apt/sources.list
-          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ $UBUNTU_CODENAME main restricted universe multiverse" >> /etc/apt/sources.list
+          
+          # 기존 sources.list 내용 모두 삭제 후 새로 작성
+          echo "" > /etc/apt/sources.list
+
+          # armhf 컨테이너이므로 armhf 패키지만 가져오도록 명시
+          # URL 경로에 띄어쓰기가 없도록 정확히 설정
+          echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME} main restricted universe multiverse" >> /etc/apt/sources.list
           echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
-          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-updates main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-security main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+          echo "deb-src [arch=armhf] http://kr.archive.ubuntu.com/ubuntu/ ${UBUNTU_CODENAME}-proposed main restricted universe multiverse" >> /etc/apt/sources.list
         
       - name: Install dependencies (apt, build-essential, etc)
         working-directory: /home/runner/work/apt/apt
