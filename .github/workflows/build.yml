@@ -19,8 +19,7 @@ jobs:
         working-directory: /home/runner/work/apt/apt
         run: |
           apt-get update # sources.list가 새로 추가되었으므로 다시 업데이트
-          apt-get install -y \
-            build-essential \
+          apt-get install -y build-essential\
             cmake \
             ninja-build \
             pkg-config \
@@ -87,8 +86,7 @@ jobs:
         working-directory: /home/runner/work/apt/apt
         run: |
           apt-get update # sources.list가 새로 추가되었으므로 다시 업데이트
-          apt-get install -y \
-            build-essential \
+          apt-get install -y build-essential \
             cmake \
             ninja-build \
             pkg-config \
