@@ -12,6 +12,11 @@ jobs:
     container:
       image: ubuntu:24.04
     steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all # 모든 아키텍처 에뮬레이션 지원
+
       - name: Prepare working directory
         run: mkdir -p /home/runner/work/apt/apt
         
@@ -21,7 +26,6 @@ jobs:
       - name: Install cross toolchain & deps
         working-directory: /home/runner/work/apt/apt
         run: |
-          dpkg --add-architecture amd64
           apt-get install -y \
             crossbuild-essential \
             cmake \
